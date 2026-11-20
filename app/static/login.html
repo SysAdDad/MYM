@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · Make Your Mark by SysAdDad</title>
+<link rel="icon" href="/brand/make-your-mark.png" type="image/png">
+<link rel="stylesheet" href="/brand/theme.css?v=mym-lockup">
+<script>
+try {
+  const theme=localStorage.getItem('signature-manager-theme');
+  if(theme==='light'||theme==='dark')document.documentElement.dataset.theme=theme;
+} catch {}
+if(!document.documentElement.dataset.theme){
+  const systemTheme=matchMedia('(prefers-color-scheme: dark)');
+  const applyTheme=()=>document.documentElement.dataset.theme=systemTheme.matches?'dark':'light';
+  applyTheme();
+  systemTheme.addEventListener('change',applyTheme);
+}
+</script>
+<style>
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; padding:16px; display:grid; place-items:center; font:16px system-ui,sans-serif; color:var(--text); background:var(--page); }
+  form { width:min(100%,360px); padding:24px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
+  .login-brand { margin:0 0 20px; padding:18px 16px 14px; }
+  label { display:block; margin-bottom:12px; }
+  input,button,select { display:block; width:100%; padding:9px 11px; margin-top:5px; border-width:1px; border-style:solid; border-radius:8px; font:inherit; }
+  input { color:var(--text); background:var(--page); border-color:var(--line); }
+  button.primary { font-weight:650; cursor:pointer; }
+  a { color:var(--status-text); }
+</style>
+<form method="post" action="/login">
+  <h1 class="brand login-brand">
+    <span class="brand-lockup"><img src="/brand/make-your-mark.png" width="4096" height="1564" alt="Make Your Mark"></span>
+    <span class="brand-byline">by <span class="brand-wordmark"><img src="/brand/sysaddad-title-source.png" width="6000" height="1988" alt="SysAdDad"></span></span>
+  </h1>
+  __DIRECTORY_LOGIN__
+  <label>Username<input name="username" required autocomplete="username"></label>
+  <label>Password<input type="password" name="password" required autocomplete="current-password"></label>
+  <button class="primary">Sign in</button>
+  __OIDC_LOGIN__
+</form>
+</html>

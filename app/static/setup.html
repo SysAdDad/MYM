@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Set up Make Your Mark</title><link rel="stylesheet" href="/brand/theme.css">
+<style>*{box-sizing:border-box}body{margin:0;padding:32px 16px;background:var(--page);color:var(--text);font:16px system-ui}main{max-width:520px;margin:5vh auto;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}label{display:block;margin:18px 0}input,button{width:100%;padding:12px;font:inherit;border:1px solid var(--line);border-radius:8px}input{margin-top:6px}code{overflow-wrap:anywhere}p{line-height:1.5}small{color:var(--muted)}</style></head>
+<body><main><h1>Make Your Mark</h1><p>by SysAdDad</p><h2>Create your administrator</h2>
+<p>Find your installation’s setup token by running this on its Docker host.</p>
+<p><code>docker compose exec signature-manager cat /data/setup-token</code></p>
+<form method="post" action="/setup"><input type="hidden" name="csrf" value="__SETUP_CSRF__">
+<label>Setup token<input type="password" name="token" required autocomplete="off"></label>
+<label>Administrator username<input name="username" required maxlength="120" autocomplete="username"></label>
+<label>Administrator password<input type="password" name="password" required minlength="12" maxlength="1024" autocomplete="new-password"></label>
+<p><small>Use at least 12 characters. Keep this local administrator available for recovery if external sign-in is unavailable.</small></p>
+<button class="primary">Create administrator</button></form></main></body></html>

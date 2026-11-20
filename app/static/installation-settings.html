@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Installation settings · Make Your Mark</title><link rel="stylesheet" href="/brand/theme.css">
+<style>*{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--text);font:15px system-ui}main{max-width:920px;padding:24px;margin:auto}header{display:flex;align-items:center;justify-content:space-between}fieldset{margin:24px 0;border:1px solid var(--line);border-radius:12px;padding:20px;background:var(--surface)}legend{font-size:20px;font-weight:600}label{display:block;margin-bottom:16px}input:not([type=checkbox]),select,textarea{display:block;width:100%;margin-top:6px;padding:10px;border:1px solid var(--line);border-radius:7px;font:inherit}textarea{min-height:110px}button{padding:10px 16px;border:1px solid var(--line);border-radius:7px;font:inherit;cursor:pointer}.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}.hint{color:var(--muted);line-height:1.5}a{color:var(--status-text)}#status{position:sticky;bottom:0;background:var(--surface);padding:16px;border:1px solid var(--line);border-radius:10px;white-space:pre-wrap}#brandPreview{max-width:220px;max-height:70px;object-fit:contain}.actions{display:flex;gap:12px}input[type=color]{height:44px}@media(max-width:600px){.grid{grid-template-columns:1fr}}</style></head>
+<body><main><header><h1>Installation settings</h1><a href="/">Back to signatures</a></header>
+<p>Make Your Mark by SysAdDad</p><p class="hint">External sign-in requires HTTPS and COOKIE_SECURE=true in the deployment configuration.</p><p class="hint">Your local recovery administrator remains available. New external accounts start as editors. Change roles in Admin settings.</p>
+<form id="settings">
+<fieldset><legend>Organization branding</legend><div class="grid"><label>Organization name<input name="organization" maxlength="100" title="Replaces the default app name in the header and login page."></label><label>Accent color<input name="accent" type="color" title="Changes the app’s purple accent. Signature colors remain editable per signature."></label></div>
+<label>Organization logo URL<input name="logo_url" title="Use an uploaded image or a complete HTTPS image URL."></label>
+<label>Upload organization logo<input type="file" id="logoUpload" accept="image/png,image/jpeg,image/webp,image/gif"></label>
+<img id="brandPreview" alt="Organization logo preview" hidden><p class="hint">A small Make Your Mark by SysAdDad credit stays visible. Clear the organization name and logo to restore the default branding.</p></fieldset>
+<fieldset><legend>OpenID Connect</legend><label><input name="oidc_enabled" type="checkbox"> Enable OIDC sign-in</label>
+<label>Issuer URL<input name="oidc_issuer" placeholder="https://sso.example.com/application/o/make-your-mark/" title="Use the exact issuer returned by the provider’s discovery document, including its trailing slash."></label>
+<div class="grid"><label>Client ID<input name="oidc_client_id" autocomplete="off"></label><label>Client secret<input name="oidc_client_secret" type="password" autocomplete="new-password" title="Leave blank to keep the stored secret."></label></div>
+<label><input name="clear_oidc_client_secret" type="checkbox"> Remove the stored OIDC client secret</label>
+<label>Callback URL<input name="oidc_redirect_uri" placeholder="https://signatures.example.com/auth/oidc/callback" title="Register this exact HTTPS address with your provider."></label>
+<label><input name="oidc_auto_provision" type="checkbox"> Create an editor account on first successful sign-in</label>
+<p class="hint">Assign access to this application in your identity provider before enabling automatic provisioning. OIDC identity is matched by issuer and subject, independently of local usernames. Changing issuers creates a separate identity.</p></fieldset>
+<fieldset><legend>LDAP / Active Directory</legend><label><input name="ldap_enabled" type="checkbox"> Enable directory sign-in</label>
+<div class="grid"><label>Directory hostname<input name="ldap_host" placeholder="directory.example.com"></label><label>Port<input name="ldap_port" type="number" min="1" max="65535"></label><label>Connection security<select name="ldap_tls"><option value="ldaps">LDAPS</option><option value="starttls">StartTLS</option></select></label><label>Stable identity attribute<select name="ldap_id_attribute"><option value="entryUUID">entryUUID · LDAP</option><option value="objectGUID">objectGUID · Active Directory</option></select></label></div>
+<label>Service-account bind DN<input name="ldap_bind_dn" placeholder="cn=signature-reader,ou=service-accounts,dc=example,dc=com"></label>
+<label>Service-account password<input name="ldap_bind_password" type="password" autocomplete="new-password" title="Leave blank to keep the stored password."></label>
+<label><input name="clear_ldap_bind_password" type="checkbox"> Remove the stored directory service-account password</label>
+<label>User search base DN<input name="ldap_base_dn" placeholder="ou=people,dc=example,dc=com"></label>
+<label>User search filter<input name="ldap_filter" title="Use {username} exactly once. Limit this search to people allowed to use the app."></label>
+<p class="hint">LDAP example <code>(uid={username})</code>. Active Directory example <code>(&amp;(objectClass=user)(sAMAccountName={username}))</code>. Restrict the search base or filter to authorized users.</p>
+<label>Directory CA certificate (PEM, optional)<textarea name="ldap_ca_pem" title="Paste your internal certificate authority’s PEM certificate if the directory uses a private CA. Server certificates are always verified."></textarea></label>
+<label><input name="ldap_auto_provision" type="checkbox"> Create an editor account after successful directory authentication</label>
+<p class="hint">The service account searches for the user, then the app verifies that user’s password with a separate encrypted bind. Passwords entered during directory login are never saved. Use a service account with read-only directory access.</p></fieldset>
+<div class="actions"><button type="button" id="test">Test connections</button><button class="primary" id="save">Save settings</button></div>
+<p id="status" role="status">Loading settings…</p></form></main>
+<script>
+const form=document.querySelector('#settings');
+const status=document.querySelector('#status');
+let csrf='',revision='',loaded=false;
+const secretNames=['oidc_client_secret','ldap_bind_password'];
+async function api(path,options={}){
+ const response=await fetch(path,{...options,headers:{'X-CSRF-Token':csrf,...options.headers}});
+ const result=await response.json();
+ if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'The request could not be completed.');
+ return result;
+}
+function preview(){
+ const image=document.querySelector('#brandPreview');
+ const value=form.elements.logo_url.value.trim();
+ image.hidden=true;
+ try{
+  const url=new URL(value,location.origin);
+  if(value&&(url.protocol==='https:'||(url.origin===location.origin&&url.pathname.startsWith('/media/')))){
+   image.src=url.href;image.hidden=false;
+  }
+ }catch{}
+}
+function populate(values){
+ revision=values.revision;
+ for(const input of form.elements){
+  if(!input.name)continue;
+  if(secretNames.includes(input.name)){
+   input.value='';input.placeholder=values[input.name+'_configured']?'Stored · leave blank to keep':'Not configured';
+  }else if(input.type==='checkbox')input.checked=values[input.name];
+  else input.value=values[input.name];
+ }
+ preview();loaded=true;
+}
+function payload(){
+ const result={revision};
+ for(const input of form.elements){
+  if(!input.name)continue;
+  result[input.name]=input.type==='checkbox'?input.checked:input.type==='number'?Number(input.value):input.value;
+ }
+ return result;
+}
+async function submit(test){
+ if(!loaded)return;
+ const buttons=[document.querySelector('#save'),document.querySelector('#test')];
+ buttons.forEach(button=>button.disabled=true);
+ status.textContent=test?'Testing enabled connections…':'Validating and saving settings…';
+ try{
+  const result=await api('/api/admin/settings'+(test?'/test':''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload())});
+  if(test)status.textContent=result.detail;
+  else{populate(result);status.textContent=result.oidc_enabled||result.ldap_enabled?'Settings saved. Complete a real sign-in in a private browser window before relying on external authentication.':'Settings saved.';}
+ }catch(error){status.textContent=error.message;}
+ finally{buttons.forEach(button=>button.disabled=false);}
+}
+form.onsubmit=event=>{event.preventDefault();submit(false);};
+document.querySelector('#test').onclick=()=>submit(true);
+form.elements.logo_url.oninput=preview;
+document.querySelector('#logoUpload').onchange=async event=>{
+ const file=event.target.files[0];if(!file)return;
+ const data=new FormData();data.append('file',file);
+ try{const asset=await api('/api/assets',{method:'POST',body:data});form.elements.logo_url.value=asset.url;preview();status.textContent='Logo uploaded. Save settings to apply it.';}
+ catch(error){status.textContent=error.message;}
+ finally{event.target.value='';}
+};
+(async()=>{
+ try{const session=await api('/api/session');csrf=session.csrf;populate(await api('/api/admin/settings'));status.textContent='Ready.';}
+ catch(error){status.textContent=error.message;}
+})();
+</script></body></html>

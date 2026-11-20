@@ -1,0 +1,1855 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Make Your Mark by SysAdDad</title>
+<link rel="icon" href="/brand/make-your-mark.png" type="image/png">
+<link rel="stylesheet" href="/brand/theme.css?v=mym-header-aligned">
+<script>
+if(location.protocol==='file:')document.documentElement.dataset.localFile='';
+const systemTheme=matchMedia('(prefers-color-scheme: dark)');
+let themePreference='system';
+try {
+  const saved=localStorage.getItem('signature-manager-theme');
+  if(saved==='light'||saved==='dark')themePreference=saved;
+} catch {}
+function applyTheme(){
+  document.documentElement.dataset.theme=themePreference==='system'?(systemTheme.matches?'dark':'light'):themePreference;
+}
+applyTheme();
+systemTheme.addEventListener('change',applyTheme);
+</script>
+<style>
+[data-local-file] body > :not(#localFileNotice) { display: none !important; }
+[data-local-file] #localFileNotice {
+  display: block !important;
+  max-width: 36rem;
+  margin: 12vh auto 0;
+  padding: 1.5rem;
+  color: #18263b;
+  font: 16px/1.5 system-ui, sans-serif;
+}
+:root {
+  font-family: system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: var(--page);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; }
+button, input, select, textarea { font: inherit; }
+button {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: inherit;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: .875rem;
+  font-weight: 600;
+}
+button:hover { border-color: var(--interactive-border); }
+button:not(.primary):hover { background: var(--hover); }
+button:disabled { cursor: default; opacity: .5; }
+.top {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px clamp(16px, 3vw, 40px);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.account-actions, .titlebar, .toolbar, .section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.account-actions { flex-wrap: wrap; }
+.theme-choice { display: flex; align-items: center; gap: 6px; margin: 0; }
+.theme-choice select { width: auto; margin: 0; }
+.user-list { display: grid; gap: 4px; margin: 10px 0; }
+.user-entry { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.user-entry span { overflow-wrap: anywhere; }
+.login-out { margin: 0; }
+.shell {
+  display: grid;
+  grid-template-columns: minmax(190px, 230px) minmax(0, 1fr) minmax(230px, 280px);
+  gap: 20px;
+  align-items: start;
+  max-width: 1520px;
+  margin: 0 auto;
+  padding: 24px clamp(16px, 3vw, 40px);
+}
+.sidebar, .panel, .editor-card, .preview {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 5px #18263b08;
+}
+.sidebar > button { width: 100%; }
+.sidebar .secondary-action { margin-top: 8px; }
+.main { min-width: 0; }
+h2, h3 { margin: 0; font-size: 1rem; }
+.section {
+  font-size: .72rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+  margin: 20px 0 7px;
+}
+.titlebar { align-items: end; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; }
+.titlebar label { flex: 1 1 180px; margin: 0; }
+.titlebar input { font-size: 1.25rem; font-weight: 700; }
+.toolbar, .actions { flex-wrap: wrap; }
+.actions { display: flex; gap: 8px; margin-top: 12px; }
+.section-heading { justify-content: space-between; flex-wrap: wrap; }
+.badge { border-radius: 100px; background: var(--tint); color: var(--selection-text); padding: 4px 8px; font-size: .75rem; }
+.recordrow { display: flex; align-items: center; gap: 4px; }
+.record {
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+  overflow-wrap: anywhere;
+  border-color: transparent;
+  font-weight: 500;
+}
+.record.active { background: var(--tint); color: var(--selection-text); font-weight: 700; }
+.canvas {
+  min-height: 150px;
+  padding: 8px;
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--canvas);
+}
+.empty { padding: 22px 8px; text-align: center; }
+.block {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px;
+  margin: 4px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.block:hover, .block.selected { border-color: var(--interactive-border); background: var(--tint); }
+.block.hidden-block .block-title { color: var(--muted); }
+.handle { color: var(--muted); cursor: grab; padding: 4px 5px; touch-action: none; user-select: none; }
+.block-title {
+  background: transparent;
+  border: 0;
+  text-align: left;
+  padding: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.icon-button { padding: 5px 7px; font-size: .75rem; }
+label { display: block; margin: 10px 0 5px; color: var(--muted); font-size: .85rem; }
+input:not([type=checkbox],[type=hidden],[type=file]), select, textarea {
+  display: block;
+  width: 100%;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-top: 5px;
+}
+input[type=color] { height: 36px; }
+input[type=file] { max-width: 100%; margin: 4px 0 8px; font-size: .8rem; }
+.hint, .status { font-size: .825rem; line-height: 1.5; }
+.hint { color: var(--muted); }
+.status { color: var(--status-text); min-height: 1.25rem; margin: 8px 0 0; }
+.preview { margin-top: 16px; }
+.preview-frame { height: 280px; min-height: 160px; resize: vertical; overflow: auto; margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; }
+.preview iframe { display: block; color-scheme: light; width: 100%; height: calc(100% - 12px); border: 0; background: #fff; }
+.preview-frame.expanded { height: 560px; }
+.visual-content { margin: 0 0 8px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: #18263b; overflow: hidden; cursor: grab; touch-action: none; user-select: none; }
+.visual-content:empty { display: none; }
+.visual-content * { pointer-events: none; }
+.visual-content img { max-width: 100%; object-fit: contain; }
+.block.selected + .visual-content { outline: 2px solid var(--focus); outline-offset: -2px; }
+.section-column > .icon-button { margin-bottom: 4px; }
+.modal {
+  width: min(740px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: inherit;
+  background: var(--surface);
+  box-shadow: 0 12px 50px #18263b42;
+}
+#contactQrImage { display: block; max-width: 100%; height: auto; margin: 16px auto; }
+.modal::backdrop { background: #18263b80; }
+#accountModal { max-width: 460px; }
+.modal textarea { min-height: 180px; font-family: ui-monospace, monospace; }
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+.help-list { padding-left: 18px; }
+@media (max-width: 980px) {
+  .shell { grid-template-columns: minmax(170px, 205px) minmax(0, 1fr); }
+  .panel { grid-column: 2; }
+}
+@media (max-width: 620px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 12px; }
+  .panel { grid-column: auto; }
+  .top { flex-wrap: wrap; }
+  .field-grid { grid-template-columns: 1fr; }
+}
+.signature-align { display: flex; align-items: center; gap: 10px; }
+.signature-align select { width: auto; margin: 0; }
+.layout-options { display: flex; flex-wrap: wrap; align-items: end; gap: 8px 16px; }
+.layout-options label { margin-bottom: 0; }
+.section-columns { display: grid; grid-template-columns: repeat(var(--columns, 2), minmax(125px, 1fr)); gap: var(--column-gap, 12px); margin: 6px 0 12px; overflow-x: auto; }
+.section-column { min-width: 0; border: 1px dashed var(--interactive-border); border-radius: 8px; background: var(--column); padding: 6px; }
+.section-column .block { flex-wrap: wrap; }
+.section-column .block-title { flex-basis: 70%; }
+.column-label { font-size: .8rem; font-weight: 700; margin-bottom: 5px; }
+.drop-tail { border: 1px dashed transparent; border-radius: 6px; padding: 7px 4px; color: var(--muted); font-size: .75rem; text-align: center; }
+.dragging .drop-tail { border-color: var(--interactive-border); }
+.drop-active { outline: 2px solid var(--focus); outline-offset: -2px; background: var(--drop); }
+.guided-shell { grid-template-columns: minmax(155px, 200px) minmax(280px, 1fr) minmax(260px, .85fr); }
+.guide-steps,.guide-layouts { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0 18px; }
+.guide-steps [aria-current=step],.guide-layouts [aria-pressed=true] { background:var(--tint); color:var(--selection-text); border-color:var(--focus); }
+.guide-layouts button { flex:1; }
+.guide-layouts span { display:block; margin-bottom:4px; }
+.guide-navigation { border-top:1px solid var(--line); margin-top:18px; padding-top:12px; }
+#guidedEditor details { margin-top:12px; }
+#guidedPreviewSlot { position:sticky; top:12px; min-width:0; }
+#guidedPreviewSlot .preview { margin-top:0; }
+#guidedPreviewSlot .preview-frame { height:220px; }
+#guidedPreviewSlot .preview-frame.expanded { height:420px; }
+.preview-frame.narrow { max-width:316px; }
+.guided-shell .advanced-library { display:none; }
+@media(max-width:960px) {
+  .guided-shell { grid-template-columns:minmax(145px, .6fr) minmax(0, 1fr); }
+  #guidedPreviewSlot { grid-column:2; position:static; }
+}
+@media(max-width:620px) {
+  .guided-shell { grid-template-columns:minmax(0, 1fr); }
+  #guidedPreviewSlot { grid-column:auto; }
+}
+</style>
+</head>
+<body>
+<main id="localFileNotice" hidden>
+  <h1>Open Make Your Mark through its server</h1>
+  <p>This HTML file is the editor template. Open the app’s HTTP or HTTPS address to load the editor and its assets.</p>
+</main>
+<header class="top">
+  <div class="brand">
+    <span class="brand-header-lockup">
+      <span class="brand-envelope"><img src="/brand/make-your-mark.png" width="4096" height="1564" alt=""></span>
+      <span class="brand-service-name"><img src="/brand/make-your-mark.png" width="4096" height="1564" alt="Make Your Mark"></span>
+    </span>
+    <span class="brand-byline">by <span class="brand-wordmark"><img src="/brand/sysaddad-title-source.png" width="6000" height="1988" alt="SysAdDad"></span></span>
+  </div>
+  <div class="account-actions">
+    <label class="theme-choice">Theme <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+    <button id="usersBtn" type="button" hidden>Admin settings</button>
+    <button id="accountBtn" type="button">Account settings</button>
+    <form class="login-out" method="post" action="/logout"><input type="hidden" name="csrf" value="__CSRF__"><button>Sign out</button></form>
+  </div>
+</header>
+<div class="shell">
+  <aside class="sidebar" aria-label="Signature library">
+    <button class="primary" id="newSig" title="Start a new editable signature.">＋ New signature</button>
+    <div class="section">Signatures</div><div id="signatures"></div>
+    <details class="library-details"><summary class="section">Templates</summary><div id="templates"></div>
+    <button id="newTemplate" title="Save the current blocks and layout as a reusable template." class="secondary-action" hidden>＋ Save as template</button></details>
+    <div class="advanced-library section">Source files</div><button class="advanced-library" id="importBtn" title="Review HTML from an existing signature and keep it as a reference.">Import HTML</button>
+  </aside>
+  <main class="main">
+    <div class="titlebar">
+      <label><span id="recordType">Signature name</span><input id="name" maxlength="120" value="Untitled signature"></label>
+      <div class="toolbar"><button id="save" class="primary" title="Keep the current editable draft.">Save draft</button><span id="advancedPublishSlot"><button id="publish" title="Save a fixed copy of the current signature.">Save version</button></span><button type="button" id="modeBtn">Advanced editor</button></div>
+      <button type="button" id="deleteRecord" hidden>Delete signature</button>
+    </div>
+<section id="guidedEditor" class="editor-card" aria-labelledby="guidedTitle" hidden>
+  <h2 id="guidedTitle">Build your signature</h2>
+  <nav class="guide-steps" aria-label="Signature builder steps">
+    <button type="button" data-step="0">1. Details</button>
+    <button type="button" data-step="1">2. Images</button>
+    <button type="button" data-step="2">3. Design</button>
+    <button type="button" data-step="3">4. Export</button>
+  </nav>
+  <section data-guide-panel="0" aria-label="Contact details">
+    <div class="section-heading"><h3>Contact details</h3><button type="button" id="guideProfiles" class="icon-button" hidden>Manage profiles</button></div>
+    <p class="hint">Fill in what you want recipients to see. Blank fields stay out of the signature.</p>
+    <label id="guideProfileLabel" hidden>Fill from contact profile
+      <select id="guideProfile" title="Copy contact details from a saved profile into this signature."></select>
+    </label>
+    <div class="field-grid">
+      <label>Full name<input data-guide="name" maxlength="120" autocomplete="name"></label>
+      <label>Job title<input data-guide="title" maxlength="120" autocomplete="organization-title"></label>
+      <label>Company<input data-guide="company" maxlength="120" autocomplete="organization"></label>
+      <label>Email address<input type="email" data-guide="email" maxlength="254" autocomplete="email"></label>
+      <label>Phone number<input type="tel" data-guide="phone" maxlength="50" autocomplete="tel" placeholder="+1 (804) 555-0123"></label>
+      <label>Phone country <select data-guide="countryRegion" autocomplete="country"></select></label>
+      <label>Website<input type="url" data-guide="website" maxlength="2048" placeholder="https://example.com"></label>
+    </div>
+    <details><summary>Social links</summary><div class="field-grid" id="guideSocial"></div></details>
+  </section>
+  <section data-guide-panel="1" aria-label="Signature images" hidden>
+    <h3>Portrait and logo</h3>
+    <p class="hint">Upload a file or enter its HTTPS URL. Either image can be left blank.</p>
+    <label>Portrait URL<input data-guide="portrait" maxlength="2048" placeholder="https://…"></label>
+    <label>Upload portrait<input type="file" data-guide-upload="portrait" accept="image/png,image/jpeg,image/gif,image/webp"></label>
+    <label>Company logo URL<input data-guide="logo" maxlength="2048" placeholder="https://…"></label>
+    <label>Upload company logo<input type="file" data-guide-upload="logo" accept="image/png,image/jpeg,image/gif,image/webp"></label>
+  </section>
+  <section data-guide-panel="2" aria-label="Signature design" hidden>
+    <h3>Layout and style</h3>
+    <div class="guide-layouts" aria-label="Signature layout">
+      <button type="button" data-layout="stacked" title="Name, images and contact details in a single column."><span aria-hidden="true">▤</span> Stacked</button>
+      <button type="button" data-layout="portrait" title="Name and title centered vertically beside the portrait."><span aria-hidden="true">▤ ▪</span> Portrait right</button>
+      <button type="button" data-layout="side" title="Portrait on the left, with the name and contact details on the right."><span aria-hidden="true">▪ ▤</span> Portrait left</button>
+    </div>
+    <div class="field-grid">
+      <label>Font<input data-guide="font" list="fontChoices" maxlength="80" placeholder="Arial"></label>
+      <label>Text size<select data-guide="size"><option value="12">Compact</option><option value="13">Standard</option><option value="15">Large</option></select></label>
+      <label>Text color<input type="color" data-guide="color"></label>
+      <label>Link color<input type="color" data-guide="linkColor"></label>
+    </div>
+    <label><input type="checkbox" data-guide="underline"> Underline links</label>
+    <div class="actions"><button type="button" id="guideQrBtn" title="Add an optional contact QR code at the bottom. Recipients can click it to open the full-size image.">Add contact QR code</button></div>
+  </section>
+  <section data-guide-panel="3" aria-label="Export signature" hidden>
+    <h3>Use your signature</h3>
+    <p class="hint">Copy your signature into your mail app’s signature settings. Send yourself a test email to check the result.</p>
+    <div id="guideExportActions"></div>
+  </section>
+  <div class="section-heading guide-navigation">
+    <button type="button" id="guideBack">Back</button>
+    <button type="button" id="guideNext" class="primary">Next</button>
+  </div>
+</section>
+    <section id="advancedEditor" class="editor-card" aria-labelledby="editorTitle">
+      <div class="section-heading">
+        <h2 id="editorTitle">Editable preview</h2>
+        <span id="recordState" class="badge">New draft</span>
+      </div>
+      <div class="actions" aria-label="Add a block">
+        <button data-add="text">＋ Text</button><button data-add="link">＋ Web link</button>
+        <button data-add="email">＋ Email link</button><button data-add="phone">＋ Phone link</button>
+        <button data-add="image">＋ Image</button><button data-add="divider">＋ Divider</button>
+        <button data-add="spacer">＋ Spacer</button>
+        <button data-add="section">＋ Row</button><button data-add="social">＋ Social links</button>
+      </div>
+      <p class="hint">Drag a rendered block or its handle to snap it into a column or reorder it. Add rows and set the number of columns in each row’s settings.</p>
+      <div class="layout-options">
+        <label class="signature-align">Signature alignment
+          <select id="signatureAlign" title="Align the entire signature table and set the default alignment for blocks."><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select>
+        </label>
+        <label>Signature font<input id="signatureFont" title="Default font for the signature. Individual blocks can override it." list="fontChoices" maxlength="80" placeholder="Arial"></label>
+      </div>
+      <datalist id="fontChoices">__FONT_OPTIONS__</datalist>
+      <div id="canvas" class="canvas" aria-label="Signature editor canvas"></div>
+      <div class="actions"><button id="undo" title="Undo the last change to the layout, styling, or contact profile." disabled>Undo</button><button id="redo" title="Restore the last change you undid." disabled>Redo</button></div>
+    </section>
+    <p id="status" class="status" role="status"></p>
+    <div id="advancedPreviewSlot"><section id="previewPane" class="preview" aria-labelledby="previewTitle">
+      <div class="section-heading"><h2 id="previewTitle">Email preview</h2><div class="toolbar"><button type="button" id="narrowPreview" aria-pressed="false" title="Check how the signature fits a narrow display.">Narrow view</button><button id="expandPreview" title="Toggle between the standard and expanded email preview." aria-expanded="false">Expand preview</button></div></div>
+      <div class="preview-frame" id="previewFrame"><iframe id="preview" title="Rendered email signature preview" sandbox=""></iframe></div>
+      <p id="imageHosting" class="hint"></p>
+      <p id="advancedExportHelp" class="hint">Save version keeps a fixed copy. Export gives you HTML to install in your mail app.</p>
+      <div class="actions" id="exportActions"><button id="copyFormatted" class="primary" disabled>Copy for email</button><button type="button" id="contactQrBtn">Contact QR code</button><button id="htmlBtn" title="Copy or download the HTML from the current draft.">Export draft HTML</button><button id="publishedBtn" title="Copy or download the version you last published." hidden>Download saved version</button><button id="bundleBtn" title="Download a ZIP containing HTML and the local images it references.">Download HTML + images</button><button id="reviewImport" title="Review the original HTML saved with this signature." hidden>Review imported source</button><span id="guidePublishSlot"></span><p id="guideExportStatus" class="hint" role="status"></p></div>
+    </section></div>
+  </main>
+  <div id="guidedPreviewSlot" hidden></div>
+  <aside id="advancedPanel" class="panel" aria-label="Editor settings">
+    <div class="section-heading"><h2>Contact profile</h2><button id="manageProfiles" title="Add or edit reusable contact information for profile placeholders." class="icon-button" hidden>Manage</button></div>
+    <select id="profileSelect" title="Choose the contact information used for placeholders in this signature." aria-label="Contact profile"><option value="">No profile</option></select>
+    <div class="section">Block settings</div><div id="settings" class="hint">Select a block to edit it.</div>
+    <div class="section">Image library</div><input id="upload" title="Upload a PNG, JPEG, GIF, or WebP up to 8 MB." type="file" accept="image/png,image/jpeg,image/gif,image/webp">
+    <div class="hint">PNG, JPEG, GIF, or WebP · maximum 8 MB.</div><div id="assetResult" class="hint"></div>
+    <div class="section">Profile placeholders</div><div class="hint">Use placeholders in text or links. They resolve from the selected contact profile.</div>
+    <ul class="hint help-list"><li>{{name}}</li><li>{{title}}</li><li>{{company}}</li><li>{{email}}</li><li>{{phone}}</li><li>{{website}}</li><li>{{address}}</li></ul>
+    <div class="section">Email compatibility</div><div class="hint">Export uses table markup and inline styles. Client rendering varies; verify the final result in the mail clients you use.</div>
+  </aside>
+</div>
+<dialog id="sourceModal" class="modal" aria-labelledby="sourceTitle"><h2 id="sourceTitle">HTML import / export</h2><p class="hint" id="sourceHelp">Imported HTML is preserved as source and sanitized for safe preview. Rebuild the source with editor blocks to export it.</p><textarea id="htmlText" aria-label="HTML source"></textarea><div id="importWarnings" class="hint" role="status"></div><iframe id="importPreview" title="Sanitized import preview with images blocked" sandbox="" tabindex="-1" hidden style="width:100%;min-height:150px;pointer-events:none"></iframe><div class="actions"><button id="doImport" class="primary">Import HTML</button><button id="keepImport" hidden>Keep source in new draft</button><button id="copyHtml">Copy HTML</button><button id="downloadHtml" hidden>Download HTML</button><button class="closeModal">Close</button></div></dialog>
+<dialog id="profileModal" class="modal" aria-labelledby="profileTitle"><h2 id="profileTitle">Contact profiles</h2><p class="hint">Profiles provide reusable contact values. Publishing snapshots the resolved HTML, so later profile edits won’t silently change a published signature.</p><div class="field-grid"><label>Profile name<input id="profileName" type="text" maxlength="120"></label><label>Full name<input id="fieldName" type="text" maxlength="500"></label><label>Title<input id="fieldTitle" type="text" maxlength="500"></label><label>Company<input id="fieldCompany" type="text" maxlength="500"></label><label>Email<input id="fieldEmail" type="email" maxlength="500"></label><label>Phone<input id="fieldPhone" type="tel" maxlength="500"></label><label>Website<input id="fieldWebsite" type="url" maxlength="500"></label><label>Address<input id="fieldAddress" type="text" maxlength="500"></label></div><div class="actions"><button id="newProfile">New profile</button><button id="saveProfile" class="primary">Save profile</button><button type="button" id="deleteProfile" title="Permanently delete the selected contact profile." hidden>Delete profile</button><button class="closeModal">Close</button></div><div id="profileStatus" class="status" role="status" aria-live="polite"></div><div id="profileList"></div></dialog>
+<dialog id="accountModal" class="modal" aria-labelledby="accountTitle">
+  <h2 id="accountTitle">Account settings</h2>
+  <dl id="accountIdentity" hidden>
+    <dt>Signed in as</dt><dd id="accountIdentityName"></dd>
+    <dt>Role</dt><dd id="accountIdentityRole"></dd>
+    <dt>Sign-in method</dt><dd id="accountIdentityMethod"></dd>
+  </dl>
+  <p id="accountHelp" class="hint"></p>
+  <form id="accountForm" method="post" action="/api/account" aria-describedby="accountHelp" hidden>
+    <label>Username<input name="username" required maxlength="120" autocomplete="username"></label>
+    <label>Current password<input name="current_password" type="password" required maxlength="4096" autocomplete="current-password"></label>
+    <label>New password <span class="hint">(optional)</span><input name="new_password" type="password" minlength="12" maxlength="1024" autocomplete="new-password"></label>
+    <label>Confirm new password<input name="confirm_password" type="password" maxlength="1024" autocomplete="new-password"></label>
+    <div class="actions"><button class="primary" id="saveAccount">Save account</button></div>
+  </form>
+  <p id="accountStatus" class="status" role="status"></p>
+  <button type="button" class="closeModal">Close</button>
+</dialog>
+<dialog id="contactQrModal" class="modal" aria-labelledby="contactQrTitle">
+  <h2 id="contactQrTitle">Contact QR code</h2>
+  <p class="hint">Anyone who scans the code can save these details as a contact. When public image hosting is enabled, anyone with the image URL can open it. Regenerate the code if the contact details change.</p>
+  <form id="contactQrForm">
+    <div class="field-grid">
+      <label>Full name<input name="name" maxlength="120" required></label>
+      <label>Company<input name="company" maxlength="120"></label>
+      <label>Job title<input name="title" maxlength="120"></label>
+      <label>Email address<input name="email" type="email" maxlength="254"></label>
+      <label>Phone number<input name="phone" type="tel" maxlength="50" placeholder="+1 (804) 555-0123"></label>
+      <label>Website<input name="website" type="text" inputmode="url" maxlength="254" placeholder="https://…"></label>
+      <label>QR color<input name="color" type="color" value="#000000"></label>
+    </div>
+    <div class="actions"><button class="primary" id="generateQr">Generate QR code</button></div>
+  </form>
+  <p id="contactQrStatus" class="status" role="status"></p>
+  <div id="contactQrResult" hidden>
+    <img id="contactQrImage" width="320" height="320" alt="Scan this QR code to open the contact card">
+    <div class="actions">
+      <button type="button" id="insertContactQr" class="primary">Add to signature</button>
+      <a id="downloadQr" download="contact-qr.png">Download PNG</a>
+      <button type="button" id="downloadVcard">Download contact file (.vcf)</button>
+    </div>
+  </div>
+  <div class="actions"><a id="openFullQr" target="_blank" rel="noopener noreferrer" hidden>Open full-size QR</a><button type="button" id="removeContactQr" hidden>Remove QR from signature</button><button type="button" class="closeModal">Close</button></div>
+</dialog>
+<dialog id="usersModal" class="modal" aria-labelledby="usersTitle">
+  <h2 id="usersTitle">Admin settings</h2>
+  <div class="actions"><a href="/admin/settings">Branding and authentication settings</a><button type="button" id="adminProfiles">Manage contact profiles</button></div>
+  <p class="hint" id="adminSsoStatus"></p>
+  <h3>Workspace users</h3>
+  <p class="hint">Editors manage their own signatures and can create shared templates. Administrators can manage all signatures, templates, profiles, and users.</p>
+  <p id="workspaceOwner" hidden></p>
+  <div id="usersList" class="user-list"></div>
+  <button type="button" id="addUser" hidden>Add user</button>
+  <form id="userForm" hidden>
+    <h3 id="userFormTitle">Add user</h3>
+    <input type="hidden" name="user_id">
+    <label>Username<input name="username" required maxlength="120" autocomplete="off"></label>
+    <label>Local password <span id="passwordHint" class="hint"></span><input name="password" type="password" minlength="12" maxlength="1024" autocomplete="new-password"></label>
+    <label id="removePasswordLabel" hidden><input name="remove_local_password" type="checkbox"> Remove local password</label>
+    <label>OIDC subject<input name="subject" maxlength="255" autocomplete="off" aria-describedby="oidcHelp"></label>
+    <p id="oidcHelp" class="hint"></p>
+    <label><input name="enabled" type="checkbox" checked> Allow sign-in</label>
+    <label><input name="is_admin" type="checkbox"> Administrator</label>
+    <div class="actions"><button class="primary" id="saveUser">Save user</button><button type="button" id="cancelUser">Cancel</button><button type="button" id="removeUser" hidden>Remove user</button></div>
+  </form>
+  <p id="usersStatus" class="status" role="status"></p>
+  <button type="button" class="closeModal">Close</button>
+</dialog>
+<script type="__EDITOR_SCRIPT_TYPE__">
+const csrf='__CSRF__';let records=[],profiles=[],current=null,blocks=[],selected=null,signatureAlign='left',signatureFont='',profileId='',previewVersion=0,savedState='',saving=false,pendingImport=null;
+const $=s=>document.querySelector(s);
+let isAdmin=false;
+async function api(url,opts={}){opts.headers={...(opts.headers||{}),'X-CSRF-Token':csrf};let r=await fetch(url,opts);if(!r.ok){let body=await r.json().catch(()=>({detail:r.statusText}));throw Error(body.detail||r.statusText)}return r.status===204?null:r.json()}
+function msg(s,target='#status'){let el=$(target);el.textContent=s;setTimeout(()=>{if(el.textContent===s)el.textContent=''},3500)}
+function content(){return {blocks,profile_id:profileId||null,align:signatureAlign,font:signatureFont,...(guide?{guided:guide,guided_custom:!guideIsCurrent()}:{})}}
+function editorState(){return JSON.stringify([$('#name').value,content()])}
+function canSwitch(){return !saving && (editorState()===savedState || confirm('Discard unsaved editor changes?'))}
+function resetHistory(){undoStack=[];redoStack=[];savedState=editorState()}
+function setProfile(id){$('#profileSelect').value=id||'';profileId=$('#profileSelect').value}
+function previewDocument(markup,images){
+  return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src ${images}">`+markup;
+}
+async function load(){[records,profiles]=await Promise.all([api('/api/records'),api('/api/profiles')]);renderLists();renderProfileOptions();if(current){let fresh=records.find(x=>x.id===current.id);if(fresh)current=fresh}if(!current){let sig=records.find(x=>x.kind==='signature');sig?openRecord(sig):create()}}
+function renderLists(){
+  for(const [kind,id] of [['signature','signatures'],['template','templates']]){
+    const list=document.getElementById(id);
+    list.replaceChildren();
+    for(const record of records.filter(item=>item.kind===kind)){
+      const row=document.createElement('div');
+      row.className='recordrow';
+      const useCopy=kind==='template'&&!record.can_edit;
+      const label=record.name+(record.has_snapshot?' · Published':record.published?' · Needs republishing':'');
+      const button=action(useCopy?'Use '+record.name:label,()=>{
+        if(canSwitch())useCopy?useTemplate(record):openRecord(record);
+      },label);
+      button.className='record'+(current?.id===record.id?' active':'');
+      row.append(button);
+      if(kind==='template'&&record.can_edit){
+        row.append(action('Create a signature from '+record.name,()=>{
+          if(canSwitch())useTemplate(record);
+        },'Use'));
+      }
+      list.append(row);
+    }
+  }
+}
+function renderProfileOptions(){let s=$('#profileSelect'),old=profileId;s.innerHTML='<option value="">No profile</option>';profiles.forEach(p=>{let o=document.createElement('option');o.value=p.id;o.textContent=p.name;s.append(o)});s.value=profiles.some(p=>p.id===old)?old:'';profileId=s.value;renderGuideProfiles()}
+function create(kind='signature',doc={blocks:[],guided:guideDefaults},name='Untitled signature',source=''){current={id:null,kind,name,source_html:source,published:false};blocks=structuredClone(doc.blocks||[]);setProfile(doc.profile_id);signatureAlign=doc.align||'left';signatureFont=doc.font||'';$('#name').value=name;selected=null;startGuide(doc.guided,doc.guided_custom);resetHistory();draw();renderLists();updateMode()}
+function openRecord(r){current=r;blocks=structuredClone(r.content.blocks||[]).map(block=>({type:'text',...block}));setProfile(r.content.profile_id);signatureAlign=r.content.align||'left';signatureFont=r.content.font||'';$('#name').value=r.name;selected=null;startGuide(r.content.guided,r.content.guided_custom);resetHistory();draw();renderLists();updateMode()}
+function updateMode(){
+  const template=current?.kind==='template';
+  $('#recordType').textContent=template?'Template name':'Signature name';
+  $('#editorTitle').textContent=template?'Editable template preview':'Editable preview';
+  $('#save').textContent=template?'Save template':'Save draft';
+  $('#deleteRecord').hidden=!isAdmin||!current?.id;
+  $('#deleteRecord').textContent=template?'Delete template':'Delete signature';
+  $('#deleteRecord').title=template?'Permanently delete this saved template.':'Permanently delete this saved signature.';
+  $('#publish').hidden=template;
+  $('#newTemplate').disabled=template;
+  $('#publishedBtn').hidden=!current?.has_snapshot;
+  $('#reviewImport').hidden=!current?.source_html;
+  updateEditorStatus();
+}
+function updateEditorStatus(){
+  $('#undo').disabled=!undoStack.length;
+  $('#redo').disabled=!redoStack.length;
+  if(!current)return;
+  const dirty=editorState()!==savedState;
+  $('#recordState').textContent=dirty?'Unsaved changes':current.has_snapshot?'Published snapshot available':current.id?'Saved':'New draft';
+}
+$('#name').oninput=updateEditorStatus;
+const socialPlatforms=__SOCIAL_PLATFORMS__;
+const maxColumns=__MAX_COLUMNS__;
+const linkTypes=['link','email','phone'];
+const blockTips={
+  text:'Add a multiline text block. Use Enter for line breaks.',
+  link:'Add clickable text that opens a website.',
+  email:'Add an email address that opens a new message.',
+  phone:'Add a phone number that opens the recipient’s dialer.',
+  image:'Add an image from a URL or use an uploaded image.',
+  divider:'Add a horizontal rule between blocks.',
+  spacer:'Add a blank line of space.',
+  section:'Add a row. Use Add column on the row to create up to '+maxColumns+' columns.',
+  social:'Add clickable social icons using your profile URLs.'
+};
+
+const alignmentOptions=[['left','Left'],['center','Center'],['right','Right']];
+
+function labelFor(block){
+  if(block.type==='section')return `Row · ${block.columns.length} column${block.columns.length===1?'':'s'}`;
+  if(block.type==='social')return 'Social links';
+  if(block.type==='email'||block.type==='phone')return block.text?.trim()||block.href?.trim()||(block.type==='email'?'Email link':'Phone link');
+  if(block.type==='image')return 'Image · '+(block.alt||block.url||'No source');
+  if(block.type==='divider')return 'Divider';
+  if(block.type==='spacer')return 'Spacer';
+  return block.text?.trim() || (block.type==='link'?'Link':'Text block');
+}
+
+function placements(){
+  return [{list:blocks,label:'Main signature'}, ...blocks.flatMap((block,index)=>
+    block.type==='section' ? block.columns.map((list,side)=>({
+      list,label:`Row ${index+1} · Column ${side+1}`
+    })) : [])];
+}
+function selectedList(){
+  return placements().find(({list})=>list.includes(selected))?.list;
+}
+
+function action(label,handler,text=label){
+  const button=document.createElement('button');
+  button.type='button';
+  button.className='icon-button';
+  button.textContent=text;
+  button.title=label;
+  button.setAttribute('aria-label',label);
+  button.onclick=handler;
+  return button;
+}
+
+function moveTo(block,from,to,index){
+  const oldIndex=from.indexOf(block);
+  if(oldIndex<0 || (block.type==='section' && to!==blocks))return;
+  if(from===to && oldIndex<index)index--;
+  if(from===to && oldIndex===index)return;
+  snapshot();
+  from.splice(oldIndex,1);
+  to.splice(index,0,block);
+  selected=block;
+  draw();
+}
+
+const snapTargets=new WeakMap();
+
+function dropTarget(element,list,index){
+  element.dataset.snap='';
+  snapTargets.set(element,{list,index});
+}
+
+function dragHandle(handle,block,list){
+  let start=null;
+  let target=null;
+  let active=false;
+  const clear=()=>{
+    start=null;
+    active=false;
+    target?.classList.remove('drop-active');
+    target=null;
+    $('#canvas').classList.remove('dragging');
+  };
+  handle.onpointerdown=event=>{
+    if(event.button!==0)return;
+    start={x:event.clientX,y:event.clientY};
+    handle.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  };
+  handle.onpointermove=event=>{
+    if(!start || (!active && Math.hypot(event.clientX-start.x,event.clientY-start.y)<6))return;
+    active=true;
+    const canvas=$('#canvas');
+    canvas.classList.add('dragging');
+    const hit=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-snap]');
+    const placement=snapTargets.get(hit);
+    const allowed=placement && (block.type!=='section' || placement.list===blocks);
+    target?.classList.remove('drop-active');
+    target=allowed?hit:null;
+    target?.classList.add('drop-active');
+  };
+  handle.onpointerup=()=>{
+    const placement=snapTargets.get(target);
+    clear();
+    if(placement)moveTo(block,list,placement.list,placement.index);
+  };
+  handle.onpointercancel=clear;
+  handle.onlostpointercapture=clear;
+}
+
+function addColumn(block){
+  if(block.columns.length>=maxColumns)return;
+  snapshot();
+  block.columns.push([]);
+  selected=block;
+  draw();
+}
+
+function drawList(container,list,prefix=''){
+  for(const [index,block] of list.entries()){
+    const item=document.createElement('div');
+    const row=document.createElement('div');
+    row.className='block'+(block===selected?' selected':'')+(block.hidden?' hidden-block':'');
+    dropTarget(row,list,index);
+    const grip=document.createElement('span');
+    grip.className='handle';
+    grip.textContent='⠿';
+    grip.setAttribute('aria-hidden','true');
+    grip.title='Drag this block to another position or column.';
+    dragHandle(grip,block,list);
+    const title=action('Edit '+labelFor(block),()=>{selected=block;draw()},labelFor(block));
+    title.className='block-title';
+    title.setAttribute('aria-pressed',String(block===selected));
+    if(block===selected)selectedTitle=title;
+    const up=action('Move up',()=>moveTo(block,list,list,index-1),'↑');
+    const down=action('Move down',()=>moveTo(block,list,list,index+2),'↓');
+    up.disabled=index===0;
+    down.disabled=index===list.length-1;
+    row.append(grip,title,up,down,action('Duplicate block',()=>{
+      snapshot();
+      selected=structuredClone(block);
+      list.splice(index+1,0,selected);
+      draw();
+    },'⧉'),action(block.hidden?'Show block':'Hide block',()=>{
+      snapshot();
+      block.hidden=!block.hidden;
+      draw();
+    },block.hidden?'Show':'Hide'),action('Remove block',()=>{
+      snapshot();
+      list.splice(index,1);
+      selected=null;
+      draw();
+    },'×'));
+    if(block.type==='section'){
+      const add=action('Add column',()=>addColumn(block),'＋ Column');
+      add.title='Add a column to this row. Maximum '+maxColumns+' columns.';
+      add.disabled=block.columns.length>=maxColumns;
+      row.append(add);
+    }
+    item.append(row);
+    const key=prefix+index;
+    if(block.type!=='section'){
+      const visual=document.createElement('div');
+      visual.className='visual-content';
+      visual.dataset.tile=key;
+      visual.setAttribute('aria-hidden','true');
+      visual.title='Click to edit this block or drag it to another position.';
+      visual.onclick=()=>{selected=block;draw()};
+      dragHandle(visual,block,list);
+      dropTarget(visual,list,index);
+      item.append(visual);
+    }
+    if(block.type==='section'){
+      const columns=document.createElement('div');
+      columns.className='section-columns';
+      columns.style.setProperty('--columns',block.columns.length);
+      columns.style.setProperty('--column-gap',`${block.column_gap??12}px`);
+      columns.dataset.row=key;
+      block.columns.forEach((column,side)=>{
+        const box=document.createElement('div');
+        box.className='section-column';
+        const heading=document.createElement('div');
+        heading.className='column-label';
+        heading.textContent=`Column ${side+1}`;
+        const add=action('Add text to '+heading.textContent.toLowerCase(),()=>addBlock('text',column),'＋ Text');
+        box.append(heading,add);
+        drawList(box,column,`${key}.${side}.`);
+        dropTarget(box,column,column.length);
+        columns.append(box);
+      });
+      item.append(columns);
+    }
+    container.append(item);
+  }
+  const tail=document.createElement('div');
+  tail.className='drop-tail';
+  tail.textContent=list.length?'Drop here to move to the end':'Drop blocks here';
+  dropTarget(tail,list,list.length);
+  container.append(tail);
+}
+
+function draw(){
+  const canvas=$('#canvas');
+  canvas.replaceChildren();
+  canvas.classList.remove('dragging');
+  selectedTitle=null;
+  $('#signatureAlign').value=signatureAlign;
+  $('#signatureFont').value=signatureFont;
+  drawList(canvas,blocks);
+  settings();
+  refreshPreview();
+}
+
+function snapshot(){
+  undoStack.push(JSON.stringify({blocks,profileId,signatureAlign,signatureFont}));
+  if(undoStack.length>100)undoStack.shift();
+  redoStack=[];
+}
+let undoStack=[],redoStack=[];
+let selectedTitle=null;
+
+function addBlock(type,target){
+  const placement=type==='section'?blocks:target || selected?.columns?.[0] || selectedList() || blocks;
+  snapshot();
+  selected={type};
+  if(type==='section')selected.columns=[[],[]];
+  if(type==='text')selected.text='New text';
+  placement.push(selected);
+  draw();
+}
+
+function selectField(container,label,choices,value,onChange,help=''){
+  const wrapper=document.createElement('label');
+  wrapper.textContent=label;
+  const select=document.createElement('select');
+  for(const [key,text] of choices)select.add(new Option(text,key));
+  select.value=value;
+  select.title=help;
+  wrapper.title=help;
+  select.onchange=()=>onChange(select.value);
+  wrapper.append(select);
+  container.append(wrapper);
+  return select;
+}
+
+const callingCodes=__CALLING_CODES__;
+const countryNames=new Intl.DisplayNames(['en'],{type:'region'});
+const phoneCountries=Object.entries(callingCodes)
+  .map(([region,code])=>[region,`${countryNames.of(region)} (+${code})`])
+  .sort((a,b)=>a[1].localeCompare(b[1]));
+function phoneCountryChoices(legacyCode){
+  return [['','International number with +'],...(legacyCode?[['legacy',`Saved calling code (${legacyCode})`]]:[]),...phoneCountries];
+}
+
+function editFont(input,previous,apply){
+  const value=input.value.trim();
+  if(value && !/^[\p{L}\p{N}_ .-]{1,80}$/u.test(value)){
+    input.value=previous;
+    msg('Enter a font name using letters, numbers, spaces, periods, underscores, or hyphens.');
+    return;
+  }
+  if(value!==previous)apply(value);
+}
+
+function settings(){
+  const panel=$('#settings');
+  panel.replaceChildren();
+  const block=selected;
+  if(!block){
+    panel.textContent='Select a block or section to edit its settings.';
+    return;
+  }
+  const type=document.createElement('p');
+  type.className='hint';
+  type.textContent=labelFor(block);
+  panel.append(type);
+
+  const change=(key,value)=>{
+    snapshot();
+    block[key]=value;
+    if(key==='column_gap'){
+      $('#canvas').querySelector(`[data-row="${blocks.indexOf(block)}"]`)?.style
+        .setProperty('--column-gap',`${value??12}px`);
+    }
+    if(selectedTitle){
+      selectedTitle.textContent=labelFor(block);
+      selectedTitle.setAttribute('aria-label','Edit '+labelFor(block));
+    }
+    refreshPreview();
+  };
+  const field=(label,key,type='text',options={},help='',container=panel)=>{
+    const {defaultValue='',...attributes}=options;
+    const wrapper=document.createElement('label');
+    wrapper.textContent=label;
+    wrapper.title=help;
+    const input=document.createElement(type==='textarea'?'textarea':'input');
+    if(type==='textarea')input.rows=3;
+    else input.type=type;
+    Object.assign(input,attributes);
+    input.title=help;
+    input.value=block[key]??defaultValue;
+    input.oninput=()=>{
+      if(type!=='number')change(key,input.value);
+      else if(input.value==='')change(key,undefined);
+      else if(input.validity.valid)change(key,input.valueAsNumber);
+    };
+    wrapper.append(input);
+    container.append(wrapper);
+  };
+  const checkField=(label,key,checked,help)=>{
+    const wrapper=document.createElement('label');
+    wrapper.title=help;
+    const check=document.createElement('input');
+    check.type='checkbox';
+    check.checked=checked;
+    check.title=help;
+    check.onchange=()=>change(key,check.checked);
+    wrapper.append(check,document.createTextNode(' '+label));
+    panel.append(wrapper);
+  };
+
+  const link=linkTypes.includes(block.type);
+  if(block.type==='email'){
+    field('Email address','href','text',{placeholder:'name@example.com or {{email}}'},'Enter the email address. The app adds mailto: automatically.');
+  }else if(block.type==='phone'){
+    field('Phone number','href','text',{placeholder:'(804) 555-0123 or {{phone}}'},'The signature uses national formatting unless you enter display text.');
+    const legacyCode=block.country_region?'':block.country_code;
+    selectField(panel,'Phone country',phoneCountryChoices(legacyCode),block.country_region||(legacyCode?'legacy':''),region=>{
+      if(region==='legacy')return;
+      snapshot();
+      block.country_region=region;
+      block.country_code=region?'+'+callingCodes[region]:'';
+      refreshPreview();
+    },'Select a country for a local number, or enter an international number beginning with +.');
+  }else if(block.type==='link'){
+    field('Destination URL','href','text',{placeholder:'https://example.com'},'Enter an HTTPS URL or a profile placeholder such as {{website}}.');
+  }
+  if(block.type==='text'||link){
+    const label=block.type==='text'?'Text':'Display text';
+    field(label,'text','textarea',{maxLength:8192},block.type==='text'
+      ?'Enter the text to display. Line breaks and profile placeholders are supported.'
+      :'Enter the words recipients see. Email and phone links display the destination when this is empty.');
+    field('Font size (px)','font_size','number',{min:8,max:36,defaultValue:14},'Size of the letters in this block.');
+    if(!link)field('Text color','color','color',{defaultValue:'#222222'},'Color of the visible text.');
+    checkField('Bold','bold',!!block.bold,'Use a heavier font weight.');
+    checkField('Italic','italic',!!block.italic,'Italicize the text.');
+  }
+  if(link){
+    field('Link color','link_color','color',{defaultValue:'#1266a5'},'Color of the clickable text in the exported email signature.');
+    checkField('Underline link','underline',block.underline!==false,'Show an underline under the clickable text.');
+  }
+  if(block.type==='image'){
+    field('Image URL','url','text',{},'Use an HTTPS URL or select an image from the upload area.');
+    field('Alternative text','alt','text',{},'Describe the image for screen readers and recipients who block images.');
+    field('Image width (px)','width','number',{min:1,max:block.contact_qr?100:600,defaultValue:block.contact_qr?100:120},'Sets the displayed width. Height follows the image’s aspect ratio.');
+  }
+  if(block.type==='section'){
+    const counts=Array.from({length:maxColumns},(_,index)=>[index+1,String(index+1)]);
+    selectField(panel,'Columns in this row',counts,block.columns.length,value=>{
+      const count=Number(value);
+      if(block.columns.slice(count).some(column=>column.length)){
+        msg('Move or remove the blocks in the last columns before reducing the column count.');
+        settings();
+        return;
+      }
+      snapshot();
+      block.columns=Array.from({length:count},(_,index)=>block.columns[index]||[]);
+      block.column_widths=block.column_widths?.slice(0,count);
+      block.column_vertical_align=block.column_vertical_align?.slice(0,count);
+      draw();
+    },'Choose how many slots are in this row. Move blocks out of a column before removing it.');
+    field('Gap between columns (px)','column_gap','number',{min:0,max:80,defaultValue:12},'Space between occupied columns in the email. Use 0 to place columns directly next to each other.');
+    for(let index=0;index<block.columns.length;index++){
+      const label=document.createElement('label');
+      label.textContent=`Column ${index+1} width (px)`;
+      label.title='Leave blank to fit the content. A set width can still expand if an image or unbroken text is wider.';
+      const input=document.createElement('input');
+      input.type='number';
+      input.min=1;
+      input.max=600;
+      input.placeholder='Auto';
+      input.title=label.title;
+      input.value=block.column_widths?.[index]??'';
+      input.oninput=()=>{
+        if(input.value!==''&&!input.validity.valid)return;
+        const widths=block.columns.map((_,side)=>side===index
+          ?(input.value===''?null:input.valueAsNumber)
+          :(block.column_widths?.[side]??null));
+        change('column_widths',widths);
+      };
+      label.append(input);
+      panel.append(label);
+      selectField(panel,`Column ${index+1} vertical alignment`,
+        [['top','Top'],['middle','Middle'],['bottom','Bottom']],
+        block.column_vertical_align?.[index]||'top',value=>{
+          change('column_vertical_align',block.columns.map((_,side)=>
+            side===index?value:(block.column_vertical_align?.[side]||'top')));
+        },'Position this column’s content against the tallest column in the row. Choose Middle to line up a shorter text stack with a portrait.');
+    }
+  }
+  if(block.type!=='section'&&block.type!=='spacer'){
+    const spacing=document.createElement('details');
+    const summary=document.createElement('summary');
+    summary.textContent='Spacing';
+    summary.title='Fine-tune the spacing around this block and between lines.';
+    spacing.append(summary);
+    const padding=({image:4,divider:5}[block.type]??2);
+    field('Space above (px)','padding_top','number',{min:0,max:80,defaultValue:padding},'Space between the top of this block and its content.',spacing);
+    field('Space below (px)','padding_bottom','number',{min:0,max:80,defaultValue:padding},'Space between this block’s content and the next block.',spacing);
+    if(block.type==='text'||link)
+      field('Line height (px)','line_height','number',{min:0,max:80,placeholder:'Auto'},'Distance between text baselines. Leave blank or set 0 for the automatic value.',spacing);
+    panel.append(spacing);
+  }
+  if(block.type==='social')socialSettings(panel,block);
+  if(['text','social',...linkTypes].includes(block.type)){
+    const label=document.createElement('label');
+    label.textContent='Block font';
+    const input=document.createElement('input');
+    input.setAttribute('list','fontChoices');
+    input.placeholder='Inherit signature font';
+    label.title=input.title='Choose a font for this block. Leave blank to use the signature font.';
+    input.maxLength=80;
+    input.value=block.font||'';
+    input.oninput=()=>editFont(input,block.font||'',value=>change('font',value));
+    label.append(input);
+    panel.append(label);
+  }
+  if(!['divider','spacer'].includes(block.type)){
+    selectField(panel,block.type==='section'?'Row alignment':'Block alignment',
+      [['','Inherit alignment'],...alignmentOptions],block.align||'',value=>change('align',value),
+      'Align content left, center, or right. Inherit uses the parent row or signature alignment.');
+  }
+  if(block.type!=='section'){
+    const from=selectedList();
+    const destinations=placements().filter(({list})=>list!==from);
+    if(destinations.length){
+      selectField(panel,'Move block to', [['','Choose a location'],...destinations.map(({label},i)=>[i,label])],
+        '',value=>{
+          if(value==='')return;
+          const {list}=destinations[Number(value)];
+          moveTo(block,from,list,list.length);
+        },'Move this block to another column or back to the main signature without dragging.');
+    }
+  }
+}
+
+function socialSettings(panel,block){
+  const links=block.links||{};
+  for(const [platform,value] of Object.entries(links)){
+    const wrapper=document.createElement('label');
+    wrapper.textContent=socialPlatforms[platform];
+    wrapper.title='Paste the HTTPS URL for your '+socialPlatforms[platform]+' profile.';
+    const input=document.createElement('input');
+    input.type='text';
+    input.placeholder='https://…';
+    input.title=wrapper.title;
+    input.maxLength=8192;
+    input.value=value;
+    input.oninput=()=>{
+      snapshot();
+      block.links[platform]=input.value;
+      refreshPreview();
+    };
+    wrapper.append(input);
+    panel.append(wrapper,action('Remove '+socialPlatforms[platform],()=>{
+      snapshot();
+      delete block.links[platform];
+      draw();
+    }));
+  }
+  const available=Object.entries(socialPlatforms).filter(([platform])=>!(platform in links));
+  if(available.length){
+    selectField(panel,'Add a social network',[['','Choose a network'],...available],'',platform=>{
+      if(!platform)return;
+      snapshot();
+      block.links={...links,[platform]:''};
+      draw();
+      panel.querySelectorAll('input[type=text]')[Object.keys(block.links).length-1]?.focus();
+    },'Choose a service to add its icon and profile URL.');
+  }
+}
+function renderTiles(tiles){
+  for(const element of $('#canvas').querySelectorAll('[data-tile]')){
+    const markup=tiles[element.dataset.tile]||'';
+    if(element.dataset.rendered===markup)continue;
+    element.dataset.rendered=markup;
+    const template=document.createElement('template');
+    template.innerHTML=markup;
+    for(const link of template.content.querySelectorAll('a'))link.removeAttribute('href');
+    for(const image of template.content.querySelectorAll('img'))image.draggable=false;
+    element.replaceChildren(template.content);
+  }
+}
+const expandPreview=$('#expandPreview');
+expandPreview.onclick=()=>{
+  const frame=$('#previewFrame');
+  const expanded=frame.classList.toggle('expanded');
+  frame.style.height='';
+  expandPreview.setAttribute('aria-expanded',String(expanded));
+  expandPreview.textContent=expanded?'Shrink preview':'Expand preview';
+};
+async function refreshPreview(){
+  updateEditorStatus();
+  const version=++previewVersion;
+  copyMarkup='';
+  $('#copyFormatted').disabled=true;
+  try{
+    const result=await api('/api/preview',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({content:content(),editor:true,check_export:!guidedMode||guideStep===3})});
+    if(version!==previewVersion)return;
+    const preview=previewDocument('<style>a { pointer-events:none; }</style>'+result.html,'https: '+location.origin+'/media/');
+    if($('#preview').srcdoc!==preview)$('#preview').srcdoc=preview;
+    renderTiles(result.tiles);
+    copyMarkup=result.copy_html||'';
+    $('#copyFormatted').disabled=!copyMarkup;
+    $('#guideExportStatus').textContent=result.copy_issue||'';
+    const hasImages=/<img\b/i.test(result.html);
+    $('#imageHosting').textContent=result.image_origin_configured||!hasImages?''
+      :'Uploads and social icons are stored here. For email delivery, configure a recipient-accessible HTTPS image host or download the HTML and images.';
+  }catch(error){
+    if(version===previewVersion)msg(error.message);
+  }
+}
+async function save(publish=false,asTemplate=false){
+  if(saving)return;
+  saving=true;
+  try{
+    const name=$('#name').value.trim()||'Untitled';
+    const state=editorState();
+    const data={id:asTemplate?null:current.id,kind:asTemplate?'template':current.kind,name,content:content(),source_html:current.source_html||'',publish};
+    const result=await api('/api/records',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(!asTemplate){
+      current={...current,id:result.id,name};
+      savedState=state;
+    }
+    await load();
+    updateMode();
+    msg(asTemplate?'Template saved':publish?'Published snapshot saved':'Draft saved');
+  }finally{saving=false}
+}
+async function useTemplate(r){create('signature',r.content,r.name.slice(0,115)+' copy',r.source_html);msg('Template copied into a new signature. Save it to keep the copy.')}
+$('#deleteRecord').onclick=async()=>{
+  if(saving||!current?.id)return;
+  const {id,kind,name,published}=current;
+  const snapshot=published?' Its published snapshot will also be deleted.':'';
+  const changes=editorState()!==savedState?' Unsaved changes will be discarded.':'';
+  if(!confirm(`Permanently delete the ${kind} “${name}”?${snapshot}${changes}`))return;
+  saving=true;
+  $('#deleteRecord').disabled=true;
+  try{
+    await api(`/api/records/${encodeURIComponent(id)}`,{method:'DELETE'});
+    records=records.filter(record=>record.id!==id);
+    const next=records.find(record=>record.kind===kind)||records.find(record=>record.kind==='signature');
+    next?openRecord(next):create();
+    $('#name').focus();
+    msg(kind==='template'?'Template deleted':'Signature deleted');
+  }catch(error){msg(error.message)}
+  finally{
+    saving=false;
+    $('#deleteRecord').disabled=false;
+  }
+};
+function openModal(id){$(id).showModal()}
+document.querySelectorAll('.closeModal').forEach(button=>button.onclick=()=>button.closest('dialog').close());
+
+const themeSelect=$('#theme');
+themeSelect.value=themePreference;
+themeSelect.onchange=()=>{
+  themePreference=themeSelect.value;
+  try { localStorage.setItem('signature-manager-theme',themePreference); } catch {}
+  applyTheme();
+};
+
+const userForm=$('#userForm');
+const usersStatus=$('#usersStatus');
+let userDirectory=null;
+let userDialogVersion=0;
+
+function showUserForm(user){
+  if($('#saveUser').disabled)return;
+  userForm.reset();
+  const fields=userForm.elements;
+  fields.user_id.value=user?.id||'';
+  fields.username.value=user?.username||'';
+  fields.subject.value=user?.oidc_subject||'';
+  fields.subject.readOnly=!userDirectory.oidc_configured;
+  fields.enabled.checked=user?.enabled??true;
+  fields.is_admin.checked=user?.is_admin??false;
+  $('#removePasswordLabel').hidden=!user?.local_login_enabled;
+  $('#removeUser').hidden=!user;
+  $('#userFormTitle').textContent=user?'Edit user':'Add user';
+  $('#passwordHint').textContent=user?.local_login_enabled?'Leave blank to keep the current password':'At least 12 characters';
+  $('#oidcHelp').textContent=userDirectory.oidc_configured
+    ?'Enter the exact subject (sub) from your identity provider. Leave blank for local-only sign-in.'
+    :'Single sign-on is unavailable until the server is configured for HTTPS OIDC.';
+  usersStatus.textContent='';
+  userForm.hidden=false;
+  fields.username.focus();
+}
+function drawUsers(){
+  const list=$('#usersList');
+  list.replaceChildren();
+  if(!userDirectory.users.length){
+    list.textContent='No additional users yet.';
+    return;
+  }
+  for(const user of userDirectory.users){
+    const entry=document.createElement('div');
+    entry.className='user-entry';
+    const text=document.createElement('span');
+    const methods=[user.local_login_enabled?'Password':'',user.oidc_subject?'OIDC':'',user.directory_login_enabled?'Directory':''].filter(Boolean).join(' + ');
+    text.textContent=[user.username,user.is_admin?'Administrator':'Editor',user.enabled?(methods||'Enabled'):'Disabled'].join(' · ');
+    entry.append(text,action('Edit '+user.username,()=>showUserForm(user),'Edit'));
+    list.append(entry);
+  }
+}
+$('#usersBtn').onclick=async()=>{
+  const version=++userDialogVersion;
+  userForm.reset();
+  userForm.hidden=true;
+  $('#workspaceOwner').hidden=true;
+  $('#usersList').replaceChildren();
+  $('#addUser').hidden=true;
+  usersStatus.textContent='Loading users…';
+  openModal('#usersModal');
+  try{
+    const directory=await api('/api/users');
+    if(version!==userDialogVersion)return;
+    userDirectory=directory;
+    $('#adminSsoStatus').textContent=directory.oidc_configured
+      ?'SSO is configured. Manage application access in your identity provider.'
+      :'SSO is off. Users can sign in with local passwords.';
+    const owner=directory.owner;
+    const methods=[owner.local_login_enabled?'Local password':'',owner.oidc_login_enabled?'SSO':''].filter(Boolean);
+    $('#workspaceOwner').textContent=[owner.username,'Workspace owner',methods.join(' + ')].filter(Boolean).join(' · ');
+    $('#workspaceOwner').hidden=false;
+    drawUsers();
+    $('#addUser').hidden=false;
+    usersStatus.textContent='';
+  }catch(error){if(version===userDialogVersion)usersStatus.textContent=error.message}
+};
+$('#adminProfiles').onclick=()=>{
+  $('#usersModal').close();
+  $('#manageProfiles').click();
+};
+$('#usersModal').addEventListener('close',()=>{userDialogVersion++;userForm.reset()});
+$('#addUser').onclick=()=>showUserForm();
+$('#cancelUser').onclick=()=>{userForm.reset();userForm.hidden=true;$('#addUser').focus()};
+userForm.onsubmit=async event=>{
+  event.preventDefault();
+  if($('#saveUser').disabled)return;
+  const version=userDialogVersion;
+  const form=new FormData(userForm);
+  form.set('enabled',String(userForm.elements.enabled.checked));
+  form.set('is_admin',String(userForm.elements.is_admin.checked));
+  form.set('remove_local_password',String(userForm.elements.remove_local_password.checked));
+  $('#saveUser').disabled=true;
+  try{
+    const user=await api('/api/users',{method:'POST',body:form});
+    if(version!==userDialogVersion)return;
+    userDirectory.users=[...userDirectory.users.filter(item=>item.id!==user.id),user]
+      .sort((a,b)=>a.username.localeCompare(b.username));
+    userForm.reset();
+    userForm.hidden=true;
+    drawUsers();
+    usersStatus.textContent='User saved.';
+    $('#addUser').focus();
+  }catch(error){if(version===userDialogVersion)usersStatus.textContent=error.message}
+  finally{$('#saveUser').disabled=false}
+};
+$('#removeUser').onclick=async()=>{
+  const editor=userDirectory.users.find(user=>user.id===userForm.elements.user_id.value);
+  if($('#saveUser').disabled||!editor||!confirm(`Remove “${editor.username}” from this workspace? This ends their access to Make Your Mark.`))return;
+  const version=userDialogVersion;
+  $('#saveUser').disabled=true;
+  $('#removeUser').disabled=true;
+  try{
+    await api(`/api/users/${encodeURIComponent(editor.id)}`,{method:'DELETE'});
+    if(version!==userDialogVersion)return;
+    userDirectory.users=userDirectory.users.filter(user=>user.id!==editor.id);
+    userForm.reset();
+    userForm.hidden=true;
+    drawUsers();
+    usersStatus.textContent='User removed.';
+    $('#addUser').focus();
+  }catch(error){if(version===userDialogVersion)usersStatus.textContent=error.message}
+  finally{
+    $('#saveUser').disabled=false;
+    $('#removeUser').disabled=false;
+  }
+};
+
+const accountForm=$('#accountForm');
+const accountStatus=$('#accountStatus');
+$('#accountBtn').onclick=async()=>{
+  accountForm.reset();
+  accountForm.hidden=true;
+  $('#accountIdentity').hidden=true;
+  $('#accountHelp').textContent='';
+  accountStatus.textContent='Loading account…';
+  openModal('#accountModal');
+  try{
+    const account=await api('/api/account');
+    accountForm.elements.username.value=account.username;
+    accountForm.hidden=!account.local_login_enabled;
+    $('#accountIdentityName').textContent=account.signed_in_as;
+    $('#accountIdentityRole').textContent=account.role==='admin'?'Administrator':'Member';
+    $('#accountIdentityMethod').textContent=({local:'Local account',oidc:'Single sign-on (OIDC)',ldap:'Directory (LDAP)'})[account.sign_in_method]||'Unknown';
+    $('#accountIdentity').hidden=false;
+    $('#accountHelp').textContent=account.local_login_enabled
+      ? 'Change your local username or password. Saving signs out your other sessions.'
+      : account.sign_in_method==='oidc'
+        ? 'You signed in through your organization’s identity provider. Manage your password there; this account has no local password.'
+        : 'You signed in with your directory account. Manage your password through your organization; this account has no local password.';
+    accountStatus.textContent='';
+    if(account.local_login_enabled && $('#accountModal').open)accountForm.elements.username.focus();
+  }catch(error){accountStatus.textContent=error.message}
+};
+$('#accountModal').addEventListener('close',()=>accountForm.reset());
+accountForm.onsubmit=async event=>{
+  event.preventDefault();
+  const form=new FormData(accountForm);
+  if(form.get('new_password')!==form.get('confirm_password')){
+    accountStatus.textContent='The new passwords do not match.';
+    accountForm.elements.confirm_password.focus();
+    return;
+  }
+  form.delete('confirm_password');
+  const button=$('#saveAccount');
+  button.disabled=true;
+  try{
+    const account=await api('/api/account',{method:'POST',body:form});
+    accountForm.reset();
+    accountForm.elements.username.value=account.username;
+    $('#accountIdentityName').textContent=account.username;
+    accountStatus.textContent='Account saved.';
+  }catch(error){accountStatus.textContent=error.message}
+  finally{button.disabled=false}
+};
+function profileFields(){return {name:$('#fieldName').value,title:$('#fieldTitle').value,company:$('#fieldCompany').value,email:$('#fieldEmail').value,phone:$('#fieldPhone').value,website:$('#fieldWebsite').value,address:$('#fieldAddress').value}}
+let profileBusy=false;
+function selectProfile(p){
+  $('#profileName').value=p?.name||'';
+  const fields=p?.fields||{};
+  for(const k of ['name','title','company','email','phone','website','address']){
+    $('#field'+k[0].toUpperCase()+k.slice(1)).value=fields[k]||'';
+  }
+  $('#saveProfile').dataset.id=p?.id||'';
+  $('#deleteProfile').hidden=!p;
+  $('#profileStatus').textContent='';
+}
+function drawProfiles(){
+  const el=$('#profileList');
+  el.replaceChildren();
+  for(const p of profiles){
+    const button=document.createElement('button');
+    button.className='record';
+    button.textContent=p.name;
+    button.onclick=()=>{if(!profileBusy)selectProfile(p)};
+    el.append(button);
+  }
+}
+async function changeProfile(change){
+  if(profileBusy)return;
+  profileBusy=true;
+  const controls=['#saveProfile','#deleteProfile','#newProfile'].map($);
+  controls.forEach(button=>button.disabled=true);
+  $('#profileStatus').textContent='';
+  try{await change()}
+  catch(error){$('#profileStatus').textContent=error.message}
+  finally{
+    profileBusy=false;
+    controls.forEach(button=>button.disabled=false);
+  }
+}
+$('#saveProfile').onclick=()=>changeProfile(async()=>{
+  const data={id:$('#saveProfile').dataset.id||null,name:$('#profileName').value,fields:profileFields()};
+  const out=await api('/api/profiles',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  await load();
+  selectProfile(profiles.find(p=>p.id===out.id));
+  drawProfiles();
+  refreshPreview();
+  msg('Profile saved','#profileStatus');
+});
+$('#deleteProfile').onclick=()=>{
+  const profile=profiles.find(p=>p.id===$('#saveProfile').dataset.id);
+  if(profileBusy||!profile||!confirm(`Permanently delete the contact profile “${profile.name}”?`))return;
+  changeProfile(async()=>{
+    await api(`/api/profiles/${encodeURIComponent(profile.id)}`,{method:'DELETE'});
+    profiles=profiles.filter(p=>p.id!==profile.id);
+    renderProfileOptions();
+    selectProfile(null);
+    drawProfiles();
+    refreshPreview();
+    $('#profileName').focus();
+    msg('Profile deleted','#profileStatus');
+  });
+};
+$('#newSig').onclick=()=>{if(canSwitch())create()};
+$('#profileSelect').onchange=()=>{snapshot();profileId=$('#profileSelect').value;refreshPreview()};
+$('#manageProfiles').onclick=()=>{if(!profileBusy){drawProfiles();selectProfile(null);openModal('#profileModal')}};
+$('#newProfile').onclick=()=>selectProfile(null);
+document.querySelectorAll('[data-add]').forEach(button=>{
+  button.title=blockTips[button.dataset.add];
+  button.onclick=()=>addBlock(button.dataset.add);
+});
+$('#signatureFont').oninput=event=>editFont(event.target,signatureFont,value=>{
+  snapshot();
+  signatureFont=value;
+  refreshPreview();
+});
+$('#signatureAlign').onchange=event=>{
+  snapshot();
+  signatureAlign=event.target.value;
+  refreshPreview();
+};
+$('#save').onclick=()=>save(false).catch(e=>msg(e.message));
+$('#publish').onclick=()=>save(true).catch(e=>msg(e.message));
+$('#newTemplate').onclick=()=>save(false,true).catch(e=>msg(e.message));
+$('#upload').onchange=async event=>{
+  const file=event.target.files[0];
+  if(!file)return;
+  const form=new FormData();
+  form.append('file',file);
+  try{
+    const asset=await api('/api/assets',{method:'POST',body:form});
+    const use=action('Use uploaded image',()=>{
+      const target=selected?.columns?.[0] || selectedList() || blocks;
+      snapshot();
+      if(selected?.type!=='image'){
+        selected={type:'image'};
+        target.push(selected);
+      }
+      Object.assign(selected,{url:asset.url,alt:file.name,width:Math.min(asset.width,240)});
+      draw();
+    });
+    const label=document.createElement('div');
+    label.textContent=file.name;
+    $('#assetResult').replaceChildren(label,use);
+  }catch(error){msg(error.message)}
+  finally{event.target.value=''}
+};
+function sourceDialog(title,help,source,mode,hasLocalImages=false,publishedId=null){
+  pendingImport=null;
+  $('#sourceTitle').textContent=title;
+  $('#sourceHelp').textContent=help;
+  $('#htmlText').value=source;
+  $('#htmlText').readOnly=mode!=='import';
+  $('#importWarnings').textContent='';
+  $('#importPreview').hidden=true;
+  $('#importPreview').removeAttribute('srcdoc');
+  $('#doImport').hidden=mode==='export';
+  $('#doImport').textContent='Preview sanitized HTML';
+  $('#keepImport').hidden=true;
+  $('#copyHtml').hidden=mode!=='export'||Boolean(publishedId&&hasLocalImages);
+  $('#copyHtml').textContent='Copy HTML source';
+  $('#downloadHtml').hidden=mode!=='export';
+  const bundle=hasLocalImages||Boolean(publishedId);
+  $('#downloadHtml').textContent=bundle?'Download HTML and images (ZIP)':'Download HTML file';
+  $('#downloadHtml').onclick=bundle
+    ?()=>downloadBundle($('#downloadHtml'),publishedId)
+    :()=>downloadFile(new Blob([standaloneHtml(source)],{type:'text/html'}),'signature.html');
+  openModal('#sourceModal');
+  $('#htmlText').focus();
+}
+const importHelp='Review the sanitized markup with remote images blocked. Keep the original source for reference, then rebuild the signature with editor blocks.';
+$('#importBtn').onclick=()=>sourceDialog('Import HTML',importHelp,'','import');
+$('#reviewImport').onclick=()=>sourceDialog('Review imported source',importHelp,current.source_html,'review');
+$('#htmlText').oninput=()=>{
+  pendingImport=null;
+  $('#keepImport').hidden=true;
+  $('#importPreview').hidden=true;
+  $('#importWarnings').textContent='';
+};
+$('#doImport').onclick=async()=>{
+  const input=$('#htmlText');
+  const source=input.value;
+  const reviewing=input.readOnly;
+  if(!source.trim()){ $('#importWarnings').textContent='Enter HTML to preview.';return }
+  try{
+    const result=await api('/api/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html:source})});
+    if(input.value!==source || input.readOnly!==reviewing || !$('#sourceModal').open)return;
+    pendingImport=result.source_html;
+    $('#importPreview').srcdoc=previewDocument(result.safe_html,"'none'");
+    $('#importPreview').hidden=false;
+    $('#importWarnings').textContent=result.warnings.join(' ');
+    $('#keepImport').hidden=reviewing;
+  }catch(error){$('#importWarnings').textContent=error.message}
+};
+$('#keepImport').onclick=()=>{
+  if(pendingImport===null || !canSwitch())return;
+  create('signature',{blocks:[],profile_id:profileId},'Imported signature',pendingImport);
+  savedState='';
+  updateEditorStatus();
+  $('#sourceModal').close();
+  msg('Source kept in this draft. Save the draft to retain it.');
+};
+$('#htmlBtn').onclick=async()=>{
+  const draft=current;
+  const visible=blocks.some(block=>!block.hidden && (
+    block.type!=='section' || block.columns.some(column=>column.some(child=>!child.hidden))
+  ));
+  if(!visible){msg('Add a visible block before exporting draft HTML');return}
+  try{
+    const result=await api('/api/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:content()})});
+    if(current===draft){
+      const help=result.has_local_images
+        ?'This draft uses local images. Download the ZIP, extract it, and open signature.html in a browser with the media folder beside it. Email delivery needs HTTPS image URLs.'
+        :'This is the current draft. Download the HTML to view it in a browser. Copy HTML source is for clients that accept HTML code.';
+      sourceDialog('Draft HTML',help,result.html,'export',result.has_local_images);
+    }
+  }catch(error){msg(error.message)}
+};
+$('#publishedBtn').onclick=async()=>{
+  const record=current;
+  try{
+    const result=await api('/api/render/'+encodeURIComponent(record.id)+'?published=true');
+    if(current===record){
+      const help=result.has_local_images
+        ?'This saved version uses LAN images. Download its ZIP to view it in a browser or prepare it for email with recipient-accessible HTTPS image URLs.'
+        :'This is the snapshot saved when you last published. Copy or download it to install it in your email client.';
+      sourceDialog('Published HTML',help,result.html,'export',result.has_local_images,record.id);
+    }
+  }catch(error){msg(error.message)}
+};
+function downloadFile(blob,filename){
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  link.href=url;
+  link.download=filename;
+  link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function standaloneHtml(fragment){
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8">'+
+    '<meta name="viewport" content="width=device-width, initial-scale=1">'+
+    '<title>Email signature</title></head><body>'+fragment+'</body></html>';
+}
+async function downloadBundle(button,publishedId=null){
+  button.disabled=true;
+  try{
+    const response=await fetch('/api/export/bundle',{method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRF-Token':csrf},body:JSON.stringify(publishedId?{published_id:publishedId}:{content:content()})});
+    if(!response.ok){
+      const error=await response.json().catch(()=>({}));
+      throw Error(error.detail||response.statusText);
+    }
+    downloadFile(await response.blob(),'signature-and-images.zip');
+  }catch(error){
+    if($('#sourceModal').open)$('#importWarnings').textContent=error.message;
+    else msg(error.message);
+  }
+  finally{button.disabled=false}
+}
+$('#bundleBtn').onclick=()=>downloadBundle($('#bundleBtn'));
+const contactQrForm=$('#contactQrForm');
+let contactQrVersion=0;
+let contactVcard='';
+let contactQrBlob=null;
+let contactPhoneRegion='';
+function clearContactQr(){
+  contactQrVersion++;
+  contactVcard='';
+  contactQrBlob=null;
+  $('#contactQrStatus').textContent='';
+  $('#contactQrResult').hidden=true;
+  $('#contactQrImage').removeAttribute('src');
+  $('#downloadQr').removeAttribute('href');
+}
+$('#guideQrBtn').onclick=$('#contactQrBtn').onclick=()=>{
+  clearContactQr();
+  contactQrForm.reset();
+  const profile=profiles.find(item=>item.id===profileId)?.fields||{};
+  const fields=guideIsCurrent()?guide:profile;
+  contactPhoneRegion=fields.countryRegion||'';
+  for(const input of contactQrForm.querySelectorAll('input')){
+    if(input.name!=='color')input.value=fields[input.name]||'';
+  }
+  contactQrForm.elements.color.value=fields.linkColor||signatureTextColor();
+  const phone=contactQrForm.elements.phone;
+  if(fields.country&&!contactPhoneRegion&&phone.value&&!phone.value.startsWith('+')){
+    phone.value='+'+fields.country.replace(/^\+/,'')+' '+phone.value;
+  }
+  const attached=blocks.flatMap(block=>block.columns?.flat()||[block]).find(block=>block.contact_qr);
+  $('#removeContactQr').hidden=!attached;
+  const fullQr=$('#openFullQr');
+  fullQr.hidden=true;
+  fullQr.removeAttribute('href');
+  if(attached?.url){
+    try{
+      const url=new URL(attached.url,location.origin);
+      if(url.protocol==='https:'||(url.origin===location.origin&&url.pathname.startsWith('/media/'))){
+        fullQr.href=url.href;
+        fullQr.hidden=false;
+      }
+    }catch{}
+  }
+  openModal('#contactQrModal');
+};
+function signatureTextColor(){
+  const text=blocks.flatMap(block=>block.columns?.flat()||[block]).find(block=>block.color);
+  return text?.color||'#000000';
+}
+contactQrForm.oninput=clearContactQr;
+$('#contactQrModal').addEventListener('close',clearContactQr);
+contactQrForm.onsubmit=async event=>{
+  event.preventDefault();
+  clearContactQr();
+  const version=contactQrVersion;
+  const button=$('#generateQr');
+  button.disabled=true;
+  try{
+    const result=await api('/api/export/contact-qr',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...Object.fromEntries(new FormData(contactQrForm)),country_region:contactPhoneRegion}),
+    });
+    if(version!==contactQrVersion)return;
+    const image='data:image/png;base64,'+result.png;
+    contactVcard=result.vcard;
+    const bytes=Uint8Array.from(atob(result.png),character=>character.charCodeAt(0));
+    contactQrBlob=new Blob([bytes],{type:'image/png'});
+    $('#contactQrImage').src=image;
+    $('#downloadQr').href=image;
+    $('#contactQrResult').hidden=false;
+    $('#contactQrStatus').textContent=result.color===contactQrForm.elements.color.value
+      ?'Contact QR code ready.':'Used black because the selected color was too light for reliable scanning.';
+  }catch(error){
+    if(version===contactQrVersion)$('#contactQrStatus').textContent=error.message;
+  }finally{button.disabled=false}
+};
+function setSignatureQr(url){
+  if(guideIsCurrent()){
+    guide.qrUrl=url;
+    renderGuideFields();
+    applyGuide();
+    return;
+  }
+  snapshot();
+  blocks=blocks.filter(block=>!block.contact_qr);
+  for(const block of blocks){
+    if(block.columns)block.columns=block.columns.map(column=>column.filter(child=>!child.contact_qr));
+  }
+  if(url)blocks.push(signatureQrBlock(url));
+  selected=null;
+  draw();
+}
+function signatureQrBlock(url){
+  return {type:'image',url,width:100,alt:'Open full-size contact QR code',align:'left',padding_top:8,padding_bottom:0,contact_qr:true};
+}
+$('#insertContactQr').onclick=async()=>{
+  if(!contactQrBlob)return;
+  const button=$('#insertContactQr');
+  const version=contactQrVersion;
+  const active=current;
+  const data=new FormData();
+  data.append('file',contactQrBlob,'contact-qr.png');
+  button.disabled=true;
+  try{
+    const image=await api('/api/assets',{method:'POST',body:data});
+    if(version!==contactQrVersion||current!==active)return;
+    setSignatureQr(image.url);
+    $('#contactQrModal').close();
+    msg('Contact QR code added to the bottom. Save the draft to keep it.');
+  }catch(error){
+    if(version===contactQrVersion)$('#contactQrStatus').textContent=error.message;
+  }finally{button.disabled=false}
+};
+$('#removeContactQr').onclick=()=>{
+  setSignatureQr('');
+  $('#contactQrModal').close();
+  msg('Contact QR code removed from the draft.');
+};
+$('#downloadVcard').onclick=()=>{
+  if(contactVcard)downloadFile(new Blob([contactVcard],{type:'text/vcard;charset=utf-8'}),'contact.vcf');
+};
+
+$('#copyHtml').onclick=async()=>{
+  try{
+    await navigator.clipboard.writeText($('#htmlText').value);
+    $('#importWarnings').textContent='HTML copied';
+  }catch(error){
+    $('#htmlText').select();
+    $('#importWarnings').textContent='Clipboard access was blocked. Copy the selected HTML manually.';
+  }
+};
+window.addEventListener('beforeunload',event=>{
+  if(current && editorState()!==savedState){event.preventDefault();event.returnValue=''}
+});
+function restoreHistory(from,to){
+  if(!from.length)return;
+  to.push(JSON.stringify({blocks,profileId,signatureAlign,signatureFont}));
+  const state=JSON.parse(from.pop());
+  blocks=state.blocks;
+  setProfile(state.profileId);
+  signatureAlign=state.signatureAlign;
+  signatureFont=state.signatureFont;
+  selected=null;
+  draw();
+}
+$('#undo').onclick=()=>restoreHistory(undoStack,redoStack);
+$('#redo').onclick=()=>restoreHistory(redoStack,undoStack);
+document.addEventListener('keydown',event=>{
+  if(guidedMode||event.target.closest('input,textarea,select,dialog'))return;
+  if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='z'){
+    event.preventDefault();
+    event.shiftKey?$('#redo').click():$('#undo').click();
+  }
+});
+let guide=null;
+let guideBasis='';
+let guideStep=0;
+let guidedMode=false;
+let copyMarkup='';
+const guideDefaults={version:1,name:'',title:'',company:'',email:'',phone:'',country:'',countryRegion:'',website:'',qrUrl:'',
+  portrait:'',logo:'',layout:'stacked',font:'',size:'13',color:'#0b0f14',linkColor:'#1266a5',underline:false};
+
+function guideSignature(){
+  return JSON.stringify([blocks,signatureAlign,signatureFont,profileId]);
+}
+function guideIsCurrent(){
+  return guide && guideBasis===guideSignature();
+}
+function guideBlocks(values){
+  const size=Number(values.size)||13;
+  const text=(value,options={})=>({type:'text',text:value,font_size:size,color:values.color,
+    padding_top:0,padding_bottom:2,...options});
+  const identity=[];
+  if(values.name.trim())identity.push(text(values.name.trim(),{bold:true,font_size:size+3}));
+  for(const key of ['title','company'])if(values[key].trim())identity.push(text(values[key].trim()));
+  const contacts=[];
+  const linkStyle={font_size:size,link_color:values.linkColor,underline:values.underline,padding_top:0,padding_bottom:2};
+  if(values.email.trim())contacts.push({type:'email',href:values.email.trim(),...linkStyle});
+  if(values.phone.trim())contacts.push({type:'phone',href:values.phone.trim(),country_code:values.country.trim(),country_region:values.countryRegion,...linkStyle});
+  if(values.website.trim())contacts.push({type:'link',href:values.website.trim(),text:values.website.trim().replace(/^https?:\/\//i,''),...linkStyle});
+  const links=Object.fromEntries(Object.entries(values.social).filter(([,value])=>value.trim()));
+  if(Object.keys(links).length)contacts.push({type:'social',links,padding_top:4,padding_bottom:0});
+  const picture=values.portrait.trim()?{type:'image',url:values.portrait.trim(),alt:'Portrait',width:56,padding_top:0,padding_bottom:2}:null;
+  const logo=values.logo.trim()?{type:'image',url:values.logo.trim(),alt:values.company.trim()||'Company logo',width:160,padding_top:4,padding_bottom:6}:null;
+  const brand=logo?[logo]:[];
+  const row=columns=>({type:'section',columns,column_gap:8,column_vertical_align:['middle','middle']});
+  const qr=values.qrUrl?[signatureQrBlock(values.qrUrl)]:[];
+  if(picture && values.layout==='portrait' && identity.length)return [row([identity,[picture]]),...brand,...contacts,...qr];
+  if(picture && values.layout==='side' && (identity.length||contacts.length))
+    return [row([[picture],[...identity,...contacts]]),...brand,...qr];
+  return [...identity,...(picture?[picture]:[]),...brand,...contacts,...qr];
+}
+function startGuide(doc,custom=false){
+  guide=null;
+  if(doc?.version===1){
+    guide={...guideDefaults,social:{}};
+    for(const [key,defaultValue] of Object.entries(guideDefaults))
+      if(typeof doc[key]===typeof defaultValue)guide[key]=doc[key];
+    for(const platform of Object.keys(socialPlatforms))
+      if(typeof doc.social?.[platform]==='string')guide.social[platform]=doc.social[platform];
+  }
+  guideBasis=custom?null:guideSignature();
+  guideStep=0;
+  setGuidedMode(Boolean(guide)&&!custom);
+}
+function setGuidedMode(enabled){
+  guidedMode=enabled;
+  $('.shell').classList.toggle('guided-shell',enabled);
+  $('#guidedEditor').hidden=!enabled;
+  $('#guidedPreviewSlot').hidden=!enabled;
+  $('#advancedEditor').hidden=enabled;
+  $('#advancedPanel').hidden=enabled;
+  $('#advancedExportHelp').hidden=enabled;
+  $('#modeBtn').textContent=enabled?'Advanced editor':'Guided builder';
+  (enabled?$('#guidedPreviewSlot'):$('#advancedPreviewSlot')).append($('#previewPane'));
+  (enabled?$('#guideExportActions'):$('#previewPane')).append($('#exportActions'));
+  (enabled?$('#guidePublishSlot'):$('#advancedPublishSlot')).append($('#publish'));
+  if(enabled){
+    renderGuideFields();
+    showGuideStep(guideStep,false);
+  }
+}
+$('#modeBtn').onclick=()=>{
+  if(!guidedMode&&!guideIsCurrent()){
+    if(blocks.length&&!confirm('Switch to Guided builder? This will rebuild the draft from the guided fields and replace the current custom layout.'))return;
+    if(!guide){
+      const profile=profiles.find(item=>item.id===profileId)?.fields||{};
+      guide={...guideDefaults,social:{},font:signatureFont};
+      for(const key of ['name','title','company','email','phone','website'])
+        guide[key]=typeof profile[key]==='string'?profile[key]:'';
+      guide.qrUrl=blocks.flatMap(block=>block.columns?.flat()||[block]).find(block=>block.contact_qr)?.url||'';
+    }
+    snapshot();
+    applyGuide();
+  }
+  setGuidedMode(!guidedMode);
+  draw();
+};
+function renderGuideFields(){
+  $('#guideQrBtn').textContent=guide.qrUrl?'Edit or remove contact QR code':'Add contact QR code';
+  const country=$('[data-guide="countryRegion"]');
+  const legacyCode=guide.countryRegion?'':guide.country;
+  country.replaceChildren(...phoneCountryChoices(legacyCode).map(([key,label])=>new Option(label,key)));
+  for(const input of $('#guidedEditor').querySelectorAll('[data-guide]')){
+    const value=guide[input.dataset.guide];
+    if(input.type==='checkbox')input.checked=value;
+    else input.value=input===country?(value||(legacyCode?'legacy':'')):value;
+  }
+  for(const input of $('#guideSocial').querySelectorAll('input'))input.value=guide.social[input.name]||'';
+  for(const button of document.querySelectorAll('[data-layout]'))
+    button.setAttribute('aria-pressed',String(button.dataset.layout===guide.layout));
+}
+function showGuideStep(step,render=true){
+  guideStep=step;
+  for(const section of document.querySelectorAll('[data-guide-panel]'))section.hidden=Number(section.dataset.guidePanel)!==step;
+  for(const button of document.querySelectorAll('[data-step]')){
+    if(Number(button.dataset.step)===step)button.setAttribute('aria-current','step');
+    else button.removeAttribute('aria-current');
+  }
+  $('#guideBack').disabled=step===0;
+  $('#guideNext').hidden=step===3;
+  $('#guideNext').textContent=step===2?'Go to export':'Next';
+  if(render)refreshPreview();
+}
+const qrContactFields=['name','title','company','email','phone','country','countryRegion','website'];
+function clearStaleGuideQr(){
+  if(!guide.qrUrl)return;
+  guide.qrUrl='';
+  $('#guideQrBtn').textContent='Add contact QR code';
+  msg('Contact details changed. Add a new contact QR code in Design if you want to include one.');
+}
+function applyGuide(){
+  blocks=guideBlocks(guide);
+  signatureFont=guide.font.trim();
+  signatureAlign='left';
+  guideBasis=guideSignature();
+  selected=null;
+  refreshPreview();
+}
+for(const button of document.querySelectorAll('[data-step]'))button.onclick=()=>showGuideStep(Number(button.dataset.step));
+$('#guideBack').onclick=()=>showGuideStep(Math.max(0,guideStep-1));
+$('#guideNext').onclick=()=>showGuideStep(Math.min(3,guideStep+1));
+for(const button of document.querySelectorAll('[data-layout]'))button.onclick=()=>{
+  guide.layout=button.dataset.layout;
+  renderGuideFields();
+  applyGuide();
+};
+for(const input of $('#guidedEditor').querySelectorAll('[data-guide]')){
+  input.oninput=()=>{
+    const key=input.dataset.guide;
+    if(key==='countryRegion'&&input.value==='legacy')return;
+    if(qrContactFields.includes(key)&&guide[key]!==input.value)clearStaleGuideQr();
+    if(key==='countryRegion'){
+      guide.country=input.value?'+'+callingCodes[input.value]:'';
+    }
+    if(key==='font'){
+      editFont(input,guide.font,value=>{guide.font=value;applyGuide()});
+      return;
+    }
+    guide[key]=input.type==='checkbox'?input.checked:input.value;
+    applyGuide();
+  };
+}
+for(const [platform,name] of Object.entries(socialPlatforms)){
+  const label=document.createElement('label');
+  label.textContent=name;
+  const input=document.createElement('input');
+  input.type='url';
+  input.name=platform;
+  input.maxLength=2048;
+  input.placeholder='https://…';
+  input.oninput=()=>{guide.social[platform]=input.value;applyGuide()};
+  label.append(input);
+  $('#guideSocial').append(label);
+}
+for(const input of document.querySelectorAll('[data-guide-upload]')){
+  input.onchange=async()=>{
+    const file=input.files[0];
+    if(!file)return;
+    const active=guide;
+    const data=new FormData();
+    data.append('file',file);
+    input.disabled=true;
+    try{
+      const image=await api('/api/assets',{method:'POST',body:data});
+      if(guide!==active||!guidedMode)return;
+      guide[input.dataset.guideUpload]=image.url;
+      renderGuideFields();
+      applyGuide();
+    }catch(error){msg(error.message)}
+    finally{input.value='';input.disabled=false}
+  };
+}
+function renderGuideProfiles(){
+  $('#guideProfileLabel').hidden=!profiles.length;
+  $('#guideProfile').replaceChildren(new Option('Choose a saved profile',''),
+    ...profiles.map(profile=>new Option(profile.name,profile.id)));
+}
+$('#guideProfiles').onclick=()=>$('#manageProfiles').click();
+$('#guideProfile').onchange=event=>{
+  const profile=profiles.find(item=>item.id===event.target.value);
+  if(!profile)return;
+  const keys=['name','title','company','email','phone','website'];
+  if(keys.some(key=>guide[key])&&!confirm('Replace the current contact details with this profile?')){
+    event.target.value='';
+    return;
+  }
+  if(keys.some(key=>guide[key]!== (profile.fields[key]||'')))clearStaleGuideQr();
+  for(const key of keys)guide[key]=profile.fields[key]||'';
+  renderGuideFields();
+  applyGuide();
+  event.target.value='';
+};
+$('#narrowPreview').onclick=()=>{
+  const narrow=$('#previewFrame').classList.toggle('narrow');
+  $('#narrowPreview').setAttribute('aria-pressed',String(narrow));
+  $('#narrowPreview').textContent=narrow?'Full width':'Narrow view';
+};
+$('#copyFormatted').onclick=async()=>{
+  if(!copyMarkup)return;
+  const fragment=copyMarkup;
+  const text=new DOMParser().parseFromString(fragment.replace(/<br>|<\/tr>/g,'$&\n'),'text/html').body.textContent.trim();
+  const status=$('#guideExportStatus');
+  try{
+    if(navigator.clipboard?.write && typeof ClipboardItem!=='undefined'){
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html':new Blob([fragment],{type:'text/html'}),
+        'text/plain':new Blob([text],{type:'text/plain'})
+      })]);
+    }else{
+      const copy=event=>{
+        event.clipboardData.setData('text/html',fragment);
+        event.clipboardData.setData('text/plain',text);
+        event.preventDefault();
+      };
+      document.addEventListener('copy',copy,{once:true});
+      try{if(!document.execCommand('copy'))throw Error('Clipboard access is blocked')}
+      finally{document.removeEventListener('copy',copy)}
+    }
+    status.textContent='Formatted signature copied.';
+  }catch{
+    status.textContent='Clipboard access was blocked. Download the HTML and open it in your browser to copy the rendered signature.';
+  }
+};
+
+api('/api/session').then(session=>{
+  isAdmin=session.can_manage_users;
+  $('#newTemplate').hidden=false;
+  for(const id of ['#usersBtn','#guideProfiles','#manageProfiles']){
+    $(id).hidden=!isAdmin;
+  }
+  return load();
+}).catch(error=>msg(error.message));
+</script>
+</body></html>

@@ -1,0 +1,123 @@
+:root {
+  color-scheme: light;
+  --terminal-ink: #0b0f14;
+  --signal-lime: #b2ef3e;
+  --wink-purple: #9a51d2;
+  --text: var(--terminal-ink);
+  --page: #f6f5f1;
+  --surface: #fff;
+  --line: #ded9e0;
+  --muted: #5e5864;
+  --tint: #efe3f7;
+  --selection-text: #563079;
+  --status-text: #563079;
+  --hover: #f8f3fb;
+  --canvas: #faf8fa;
+  --column: #f4ecf9;
+  --drop: #ead7f7;
+  --focus: #754298;
+  --interactive-border: #8964a0;
+}
+:root[data-theme=dark] {
+  color-scheme: dark;
+  --text: #fcf9f4;
+  --page: var(--terminal-ink);
+  --surface: #17141d;
+  --line: #41374b;
+  --muted: #c4b8cc;
+  --tint: #39234a;
+  --selection-text: #efd7ff;
+  --status-text: #e3bafc;
+  --hover: #292133;
+  --canvas: #110f17;
+  --column: #21182c;
+  --drop: #44285b;
+  --focus: #d8a6f7;
+  --interactive-border: var(--wink-purple);
+}
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--terminal-ink);
+  color: #fcf9f4;
+}
+.brand-lockup, .brand-wordmark {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+.brand-lockup {
+  width: 144px;
+  max-width: 100%;
+  aspect-ratio: 3714 / 1167;
+}
+.brand-wordmark {
+  width: 74px;
+  aspect-ratio: 2750 / 766;
+}
+.brand-lockup img, .brand-wordmark img {
+  position: absolute;
+  max-width: none;
+  height: auto;
+}
+/* Frame the visible bounds of the supplied MYM artwork. */
+.brand-lockup img {
+  width: calc(100% * 4096 / 3714);
+  left: calc(-100% * 170 / 3714);
+  top: calc(-100% * 198 / 1167);
+}
+/* Frame the SysAdDad lettering and underline. */
+.brand-wordmark img {
+  width: calc(100% * 6000 / 2750);
+  left: calc(-100% * 2166 / 2750);
+  top: calc(-100% * 311 / 766);
+}
+.brand-byline {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .7rem;
+  font-weight: 600;
+}
+.login-brand .brand-lockup { width: 224px; }
+.login-brand .brand-wordmark { width: 94px; }
+.brand-header-lockup {
+  --header-logo-height: calc(85px * 1100 / 2100);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-envelope, .brand-service-name {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  height: var(--header-logo-height);
+}
+.brand-envelope { aspect-ratio: 1225 / 1167; }
+.brand-service-name { aspect-ratio: 2100 / 1100; }
+.brand-header-lockup img { position: absolute; max-width: none; height: auto; }
+.brand-envelope img {
+  width: calc(100% * 4096 / 1225);
+  left: calc(-100% * 170 / 1225);
+  top: calc(-100% * 198 / 1167);
+}
+.brand-service-name img {
+  width: calc(100% * 4096 / 2100);
+  left: calc(-100% * 1785 / 2100);
+  top: calc(-100% * 215 / 1100);
+}
+.primary {
+  color: var(--terminal-ink);
+  background: var(--signal-lime);
+  border-color: #65881f;
+}
+.primary:hover {
+  color: var(--terminal-ink);
+  background: #c4f46a;
+  border-color: #65881f;
+}
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
