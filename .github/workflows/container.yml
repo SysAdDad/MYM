@@ -24,6 +24,17 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Check Docker Hub publishing credentials
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        shell: bash
+        run: |
+          if [[ -z "$DOCKERHUB_USERNAME" || -z "$DOCKERHUB_TOKEN" ]]; then
+            echo "Set DOCKERHUB_USERNAME and DOCKERHUB_TOKEN in this repository's Actions secrets."
+            exit 1
+          fi
       - name: Configure image name
         shell: bash
         run: |
@@ -62,6 +73,13 @@ jobs:
         run: |
           docker rm -f mym-ci 2>/dev/null || true
           docker volume rm mym-ci-data 2>/dev/null || true
+      - name: Sign in to Docker Hub
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Sign in to GitHub Container Registry
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4
@@ -80,6 +98,9 @@ jobs:
             ${{ env.IMAGE }}:stable
             ${{ env.IMAGE }}:${{ env.VERSION }}
             ${{ env.IMAGE }}:sha-${{ github.sha }}
+            docker.io/sysaddad/mym:stable
+            docker.io/sysaddad/mym:${{ env.VERSION }}
+            docker.io/sysaddad/mym:sha-${{ github.sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.title=Make Your Mark Community by SysAdDad
@@ -87,3 +108,4 @@ jobs:
             org.opencontainers.image.licenses=MIT
           cache-from: type=gha
           cache-to: type=gha,mode=max
+

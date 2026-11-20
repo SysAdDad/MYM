@@ -12,8 +12,9 @@ is kept in a separate private repository. The two repositories do not synchroniz
    image name intact. Review the diff, license notices, screenshots, and Compose files.
 3. Wait for the container, regression, setup, and persistence checks to pass.
 4. Merge, then create a version tag such as `v0.1.0` on the reviewed commit.
-5. Wait for that tag's workflow to pass. It publishes `ghcr.io/sysaddad/mym-community`
-   with the version, `stable`, and `sha-COMMIT_SHA` tags. Verify anonymous pull access.
+5. Wait for that tag's workflow to pass. It publishes the same build to
+   `ghcr.io/sysaddad/mym-community` and `docker.io/sysaddad/mym`, with version,
+   `stable`, and `sha-COMMIT_SHA` tags. Verify anonymous pull access to both registries.
 6. Publish release notes that identify the source revision, image version, changes,
    migration requirements, and checks that remain unperformed.
 
@@ -30,3 +31,21 @@ limits are recorded in [code-review.md](code-review.md).
 
 The older private `ghcr.io/sysaddad/mym:ce` package is unrelated to this public image.
 Existing installations are not automatically migrated or redeployed.
+
+## Docker Hub publishing setup
+
+Create a public Docker Hub repository named `sysaddad/mym`. In the public GitHub
+repository, save `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` under Actions repository
+secrets. The token needs Read & Write permission, not Delete. Never paste its value
+into a workflow, issue, or commit.
+
+The release workflow signs in only on version-tag pushes, after tests pass. A missing
+secret stops publication with an explicit error. Branch builds and pull requests
+do not sign in to either release registry. Manual workflow runs test but don't publish.
+
+A new approved tag (for example `v0.1.1`) is needed to populate Docker Hub for the
+first time; adding the secrets and merging the workflow alone doesn't upload an image.
+Don't move the existing `v0.1.0` tag. Users may choose `sysaddad/mym:stable` or the
+existing GHCR image once the first dual-registry release succeeds. Their containers
+aren't updated automatically. If one registry push fails, inspect both registries
+and retry the failed workflow before announcing the release as available in both.
