@@ -1,0 +1,29 @@
+name: make-your-mark-community
+
+services:
+  signature-manager:
+    image: make-your-mark-community:local
+    build: .
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATA_DIR: /data
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SIGNATURE_BIND_IP: ${SIGNATURE_BIND_IP:-127.0.0.1}
+    volumes:
+      - signature_data:/data
+    ports:
+      - target: 8080
+        host_ip: ${SIGNATURE_BIND_IP:-127.0.0.1}
+        published: "${SIGNATURE_BIND_PORT:-8080}"
+        protocol: tcp
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  signature_data:

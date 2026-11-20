@@ -2,8 +2,8 @@ name: make-your-mark-community
 
 services:
   signature-manager:
-    image: make-your-mark-community:local
-    build: .
+    image: ghcr.io/sysaddad/mym-community:stable
+    pull_policy: always
     restart: unless-stopped
     env_file:
       - path: .env

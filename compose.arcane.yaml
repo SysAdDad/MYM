@@ -1,3 +1,4 @@
+# Compatibility copy for existing links. New installations should use compose.yaml.
 name: make-your-mark-community
 
 services:

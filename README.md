@@ -92,17 +92,20 @@ docker compose up -d
 docker compose exec signature-manager cat /data/setup-token
 ```
 
-Then open **http://localhost:8080/setup**. Compose 2.24 or later is required for the optional `.env` entry above. The same configuration is available in [compose.arcane.yaml](compose.arcane.yaml).
+Then open **http://localhost:8080/setup**. Compose 2.24 or later is required for the optional `.env` entry above. The ready-to-use file is [compose.yaml](compose.yaml).
 
-### Arcane
+### Using a container management interface
 
-Paste [compose.arcane.yaml](compose.arcane.yaml) into a new project, then deploy it. In the container console, run:
+If your Docker host has a web interface, create a Compose project and paste
+[compose.yaml](compose.yaml). Set any environment values in that project's settings,
+then deploy it. The file uses the prebuilt image, so it doesn't need application
+source or a Dockerfile beside it.
+
+Open a console inside the running `signature-manager` container to get the setup token:
 
 ```sh
 cat /data/setup-token
 ```
-
-Use the token on the setup page. Don't use the source-build [compose.yaml](compose.yaml) in an empty Arcane project: that file expects a Dockerfile and the application source beside it.
 
 ## LAN access and HTTPS
 
@@ -168,14 +171,19 @@ The `stable` tag follows tested version tags, not every commit to `main`. You ca
 
 ## Working on the app
 
-To build the container from source:
+To build the container from source, use [compose.build.yaml](compose.build.yaml):
 
 ```sh
 git clone https://github.com/SysAdDad/MYM.git
 cd MYM
-docker compose up -d --build
-docker compose exec signature-manager cat /data/setup-token
+docker compose -f compose.build.yaml up -d --build
+docker compose -f compose.build.yaml exec signature-manager cat /data/setup-token
 ```
+
+If you already built from source with an older checkout, use `-f compose.build.yaml`
+for future build, update, logs, and stop commands. The default `compose.yaml` now pulls
+the prebuilt image. Both files retain the same project and volume names; use one
+method at a time. The older `compose.arcane.yaml` filename remains a compatibility copy.
 
 For local development, use Python 3.12:
 

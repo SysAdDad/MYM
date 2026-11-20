@@ -50,6 +50,7 @@ jobs:
       - name: Validate Compose
         run: |
           docker compose -f compose.yaml config --quiet
+          docker compose -f compose.build.yaml config --quiet
           docker compose -f compose.arcane.yaml config --quiet
       - name: Test first-run setup and persistent volume
         run: |

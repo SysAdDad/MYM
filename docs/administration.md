@@ -96,7 +96,7 @@ Keep the **entire `/data` volume**, plus your Compose file and `.env`. The volum
 
 Stop the app before making a filesystem copy for a consistent backup. Protect backups as sensitive data, and test a restore into a separate installation. Keep the previous image revision for rollback. Don't run two app installations against the same SQLite volume.
 
-Compose's default named volume is initialized for the container's UID/GID **10001**. If you use a bind mount instead, make that directory writable by UID/GID 10001. If Arcane can't read `.env`, correct that file's ownership or restricted read permissions for Arcane's configured UID/GID; don't make secrets world-readable.
+Compose's default named volume is initialized for the container's UID/GID **10001**. If you use a bind mount instead, make that directory writable by UID/GID 10001. If your container management interface can't read `.env`, correct that file's ownership or restricted read permissions for its configured UID/GID; don't make secrets world-readable.
 
 Settings saves detect stale revisions. Authentication-setting changes invalidate external sessions; branding-only changes don't. Local password changes invalidate other local sessions.
 
